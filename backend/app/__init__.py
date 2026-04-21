@@ -1,0 +1,57 @@
+from flask import Flask, jsonify
+from flask_cors import CORS
+from werkzeug.exceptions import HTTPException
+import traceback
+
+from app.configs.config import Config
+from app.configs.database_config import db, migrate
+from app.configs.jwt_config import init_jwt
+from app.configs.cloudinary_config import init_cloudinary
+
+from app.controllers.auth_controller import auth_bp
+
+from app import models
+
+def create_app():
+    app = Flask(__name__)
+    app.config.from_object(Config)
+
+    # CORS
+    CORS(
+        app,
+        supports_credentials=True,
+        origins=["http://localhost:5174"]
+    )
+
+    # Init extensions
+    db.init_app(app)
+    migrate.init_app(app, db)
+    init_jwt(app)
+    init_cloudinary(app)
+
+    # Register blueprints
+    app.register_blueprint(auth_bp)
+
+    # Global error handler
+    @app.errorhandler(Exception)
+    def handle_exception(e):
+        if isinstance(e, HTTPException):
+            return jsonify({
+                "success": False,
+                "message": e.description
+            }), e.code
+
+        return jsonify({
+            "success": False,
+            "message": "Internal Server Error"
+        }), 500
+    
+    @app.errorhandler(Exception)
+    def handle_exception(e):
+        traceback.print_exc()
+        return jsonify({
+            "message": str(e),
+            "success": False
+        }), 500
+
+    return app
