@@ -4,6 +4,8 @@ import MainLayout from "../components/layout/MainLayout";
 import Home from "../pages/home/Home";
 import Login from "../pages/auth/Login";
 import Register from "../pages/auth/Register";
+//import PaymentPage from "../pages/pay/PaymentPage";
+import PaymentPage from "../pages/pay/PaymentPage";
 // import Profile from "../pages/user/Profile";
 
 import { useAuth } from "../context/AuthContext";
@@ -51,6 +53,9 @@ export default function AppRoutes() {
             }
           />
         </Route>
+      </Routes>
+      <Routes>
+        <Route path="/payment" element={<PaymentPage />} />
       </Routes>
     </BrowserRouter>
   );

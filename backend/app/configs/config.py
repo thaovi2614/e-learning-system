@@ -12,7 +12,10 @@ class Config:
     JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
     JWT_ACCESS_TOKEN_EXPIRES = 3600
     JWT_ACCESS_COOKIE_NAME = "access_token_cookie"
-    JWT_TOKEN_LOCATION = ["cookies"]
+    #JWT_TOKEN_LOCATION = ["cookies"]
+    JWT_TOKEN_LOCATION = ["headers", "cookies"]
+    JWT_HEADER_NAME = "Authorization"
+    JWT_HEADER_TYPE = "Bearer"
     JWT_COOKIE_SECURE = False
     JWT_COOKIE_CSRF_PROTECT = False
     JWT_COOKIE_SAMESITE = "Lax"

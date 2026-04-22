@@ -9,19 +9,24 @@ from app.configs.jwt_config import init_jwt
 from app.configs.cloudinary_config import init_cloudinary
 
 from app.controllers.auth_controller import auth_bp
+from app.controllers.payment_controller import payment_bp
 
 from app import models
+from flask_cors import CORS
+from flask import Flask
+
+  # thêm dòng này
 
 def create_app():
     app = Flask(__name__)
+    CORS(app, resources={
+    r"/api/*": {
+        "origins": ["http://localhost:5173"]
+    }
+})
     app.config.from_object(Config)
 
-    # CORS
-    CORS(
-        app,
-        supports_credentials=True,
-        origins=["http://localhost:5174"]
-    )
+    
 
     # Init extensions
     init_db(app)
@@ -30,6 +35,7 @@ def create_app():
 
     # Register blueprints
     app.register_blueprint(auth_bp)
+    app.register_blueprint(payment_bp)
 
     # Global error handler
     @app.errorhandler(Exception)
