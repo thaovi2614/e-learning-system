@@ -10,7 +10,7 @@ from app.configs.cloudinary_config import init_cloudinary
 
 from app.controllers.auth_controller import auth_bp
 from app.controllers.payment_controller import payment_bp
-from app.controllers.enrollment_controller import enrollment_bp
+
 
 from app import models
 from flask_cors import CORS
@@ -37,7 +37,6 @@ def create_app():
     # Register blueprints
     app.register_blueprint(auth_bp)
     app.register_blueprint(payment_bp)
-    app.register_blueprint(enrollment_bp)
 
     # Global error handler
     @app.errorhandler(Exception)
