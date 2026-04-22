@@ -4,7 +4,7 @@ from werkzeug.exceptions import HTTPException
 import traceback
 
 from app.configs.config import Config
-from app.configs.database_config import db, migrate
+from app.configs.database_config import init_db
 from app.configs.jwt_config import init_jwt
 from app.configs.cloudinary_config import init_cloudinary
 
@@ -24,8 +24,7 @@ def create_app():
     )
 
     # Init extensions
-    db.init_app(app)
-    migrate.init_app(app, db)
+    init_db(app)
     init_jwt(app)
     init_cloudinary(app)
 
