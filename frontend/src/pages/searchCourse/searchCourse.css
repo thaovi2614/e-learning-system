@@ -1,11 +1,11 @@
-.home-container {
+.search-container {
     max-width: 1000px;
     margin: 0 auto;
     padding: 20px;
 }
 
 .section-title {
-    margin: 20px 0 10px;
+    margin: 20px 0 20px;
     font-weight: bold;
 }
 
@@ -17,10 +17,6 @@
     margin-bottom: 16px;
     gap: 16px;
     cursor: pointer;
-}
-
-.course-card.highlight {
-    border: 2px solid black;
 }
 
 /* THUMBNAIL */

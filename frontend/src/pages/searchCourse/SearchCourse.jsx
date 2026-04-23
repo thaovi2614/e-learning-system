@@ -1,21 +1,29 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useCart } from "../../context/CartContext";
+import { useNavigate, useSearchParams } from "react-router-dom"
 import { getCourses } from "../../services/courseApi";
-import "./home.css"
+import "./searchCourse.css"
 
-export default function Home() {
+export default function SearchCourse() {
+    const[searchParams] = useSearchParams();
     const[courses, setCourses] = useState([]);
+    const[totalCourses, setTotalCourses] = useState(0);
     const[page, setPage] = useState(1);
     const[totalPages, setTotalPages] = useState(1);
     const listRef = useRef(null);
     const navigate = useNavigate();
 
-    async function fetchData(p = 1, shouldScroll = false) {
-        const res = await getCourses({ page: p, size: 5 });
+    const kw = searchParams.get("kw") || "";
 
+    async function fetchData(p = 1, shouldScroll = false) {
+        const res = await getCourses({
+            name: kw,
+            page: p,
+            size: 5
+        });
+        
         setCourses(res.data.items);
-        setTotalPages(res.data.total_pages);
+        setTotalCourses(res.data.total);
+        setTotalPages(res.data.total_pages)
         setPage(p);
 
         if (shouldScroll) {
@@ -26,11 +34,11 @@ export default function Home() {
                 });
             }, 100);
         }
-    }
+    };
 
     useEffect(() => {
-        fetchData(1, false);
-    }, []);
+        fetchData(1, false)
+    }, [kw]);
 
     function formattedPrice(price) {
         const formatted = new Intl.NumberFormat('vi-VN', {
@@ -38,31 +46,12 @@ export default function Home() {
             currency: 'VND',
         }).format(price);
 
-        return formatted
-    }
+        return formatted;
+    };
 
     return (
-        <div className="home-container">
-            <h1 className="section-title">Các khóa học nổi bật</h1>
-
-            {courses[0] && (
-                <div 
-                    className="course-card highlight"
-                    onClick={() => navigate(`/courses/${courses[0].id}`)}
-                >
-                    <div className="thumbnail">
-                        <img src={courses[0].thumbnail} alt="" />
-                    </div>
-                    
-                    <div className="course-content">
-                        <h3>{courses[0].name}</h3>
-                        <p>{courses[0].subtitle}</p>
-                        <p>{formattedPrice(courses[0].price)}</p>
-                    </div>
-                </div>
-            )}
-
-            <h1 className="section-title" ref={listRef}>Tất cả các khóa học</h1>
+        <div className="search-container">
+            <h2 className="section-title" ref={listRef}>{totalCourses} kết quả cho "{kw}"</h2>
             <div className="course-list">
                 {courses.map(c => (
                     <div 
@@ -83,7 +72,7 @@ export default function Home() {
             </div>
 
             <div className="pagination">
-                <button disabled={page===1} onClick={() => fetchData(page - 1, true)}>
+                <button disabled={page === 1} onClick={() => fetchData(page - 1, true)}>
                     «
                 </button>
 
@@ -97,7 +86,7 @@ export default function Home() {
                     </button>
                 ))}
 
-                <button disabled={page===totalPages} onClick={() => fetchData(page + 1, true)}>
+                <button disabled={page === totalPages} onClick={() => fetchData(page + 1, true)}>
                     »
                 </button>
             </div>

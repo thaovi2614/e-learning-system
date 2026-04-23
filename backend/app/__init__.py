@@ -34,7 +34,7 @@ def create_app():
     # Register blueprints
     app.register_blueprint(auth_bp)
     app.register_blueprint(course_bp)
-#    app.register_blueprint(cart_bp)
+    app.register_blueprint(cart_bp)
     app.register_blueprint(payment_bp)
 
     # Global error handler
