@@ -1,73 +1,109 @@
-import json
 import uuid
+import requests
 import hmac
 import hashlib
-import requests
 
-ENDPOINT     = "https://test-payment.momo.vn/v2/gateway/api/create"
+
+# ================== CONFIG ==================
+
+MOMO_ENDPOINT = "https://test-payment.momo.vn/v2/gateway/api/create"
+
 PARTNER_CODE = "MOMO"
-ACCESS_KEY   = "F8BBA842ECF85"
-SECRET_KEY   = "K951B6PE1waDMi640xX08PD3vg6EkVlz"
-REDIRECT_URL = "https://arena-italics-shrug.ngrok-free.dev/payment-success"
-IPN_URL      = "https://arena-italics-shrug.ngrok-free.dev/api/payments/momo/ipn"
+ACCESS_KEY = "F8BBA842ECF85"
+SECRET_KEY = "K951B6PE1waDMi640xX08PD3vg6EkVlz"
+
+REDIRECT_URL = "http://localhost:5173/cart"
+IPN_URL = "https://fondly-husked-tubular.ngrok-free.dev/api/payments/momo/ipn"
 
 
-def create_momo_payment(amount, order_id=None, description="Thanh toan khoa hoc"):
-    order_id     = str(order_id) if order_id else str(uuid.uuid4())
-    request_id   = str(uuid.uuid4())
-    request_type = "captureWallet"
-    extra_data   = ""
+# ================== CREATE PAYMENT ==================
 
+def create_momo_payment(amount, order_id):
+    """
+    amount: int
+    order_id: string (map với payment.transaction_id)
+    """
+
+    request_id = str(uuid.uuid4())
+    order_info = "Thanh toán khóa học"
+    extra_data = ""
+    request_type = "payWithATM"
+
+    # 🔥 RAW SIGNATURE (GIỮ NGUYÊN FORMAT MOMO)
     raw_signature = (
-        "accessKey="    + ACCESS_KEY            +
-        "&amount="      + str(int(amount))       +
-        "&extraData="   + extra_data             +
-        "&ipnUrl="      + IPN_URL                +
-        "&orderId="     + order_id               +
-        "&orderInfo="   + description            +
-        "&partnerCode=" + PARTNER_CODE           +
-        "&redirectUrl=" + REDIRECT_URL           +
-        "&requestId="   + request_id             +
+        "accessKey=" + ACCESS_KEY +
+        "&amount=" + str(amount) +
+        "&extraData=" + extra_data +
+        "&ipnUrl=" + IPN_URL +
+        "&orderId=" + order_id +
+        "&orderInfo=" + order_info +
+        "&partnerCode=" + PARTNER_CODE +
+        "&redirectUrl=" + REDIRECT_URL +
+        "&requestId=" + request_id +
         "&requestType=" + request_type
     )
 
-    h = hmac.new(
-        bytes(SECRET_KEY, 'utf-8'),
-        bytes(raw_signature, 'utf-8'),
+    # 🔐 SIGNATURE
+    signature = hmac.new(
+        SECRET_KEY.encode("utf-8"),
+        raw_signature.encode("utf-8"),
         hashlib.sha256
-    )
-    signature = h.hexdigest()
+    ).hexdigest()
 
-    data = {
+    # 📦 PAYLOAD
+    payload = {
         "partnerCode": PARTNER_CODE,
-        "partnerName": "Test",
-        "storeId":     "MomoTestStore",
-        "requestId":   request_id,
-        "amount":      str(int(amount)),
-        "orderId":     order_id,
-        "orderInfo":   description,
+        "partnerName": "Elearning",
+        "storeId": "ElearningStore",
+        "requestId": request_id,
+        "amount": str(amount),
+        "orderId": order_id,
+        "orderInfo": order_info,
         "redirectUrl": REDIRECT_URL,
-        "ipnUrl":      IPN_URL,
-        "lang":        "vi",
-        "extraData":   extra_data,
+        "ipnUrl": IPN_URL,
+        "lang": "vi",
+        "extraData": extra_data,
         "requestType": request_type,
-        "signature":   signature
+        "signature": signature
     }
 
-    try:
-        data_str = json.dumps(data)
-        response = requests.post(
-            ENDPOINT,
-            data=data_str,
-            headers={
-                "Content-Type":   "application/json",
-                "Content-Length": str(len(data_str))
-            },
-            timeout=20
-        )
-        result = response.json()
-        print("=== MoMo response ===", result)
-        return result
-    except Exception as e:
-        print("=== MoMo error ===", str(e))
-        return {"message": "Lỗi khi gọi MoMo", "error": str(e)}
+    # 🚀 CALL MOMO
+    response = requests.post(
+        MOMO_ENDPOINT,
+        json=payload,
+        headers={"Content-Type": "application/json"}
+    )
+
+    data = response.json()
+
+    return {
+        "payUrl": data.get("payUrl"),
+        "orderId": order_id,
+        "requestId": request_id,
+        "raw": data
+    }
+
+def verify_momo_signature(data):
+    raw_signature = (
+        "accessKey=" + ACCESS_KEY +
+        "&amount=" + str(data.get("amount")) +
+        "&extraData=" + str(data.get("extraData")) +
+        "&message=" + str(data.get("message")) +
+        "&orderId=" + str(data.get("orderId")) +
+        "&orderInfo=" + str(data.get("orderInfo")) +
+        "&orderType=" + str(data.get("orderType")) +
+        "&partnerCode=" + str(data.get("partnerCode")) +
+        "&payType=" + str(data.get("payType")) +
+        "&requestId=" + str(data.get("requestId")) +
+        "&responseTime=" + str(data.get("responseTime")) +
+        "&resultCode=" + str(data.get("resultCode")) +
+        "&transId=" + str(data.get("transId"))
+    )
+
+    signature = hmac.new(
+        SECRET_KEY.encode("utf-8"),
+        raw_signature.encode("utf-8"),
+        hashlib.sha256
+    ).hexdigest()
+
+    return signature == data.get("signature")
