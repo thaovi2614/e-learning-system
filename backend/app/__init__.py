@@ -10,7 +10,7 @@ from app.configs.cloudinary_config import init_cloudinary
 
 from app.controllers.auth_controller import auth_bp
 from app.controllers.course_controller import course_bp
-#from app.controllers.cart_controller import cart_bp
+from app.controllers.cart_controller import cart_bp
 from app.controllers.payment_controller import payment_bp
 
 from app import models

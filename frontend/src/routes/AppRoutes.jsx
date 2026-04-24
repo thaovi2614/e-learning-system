@@ -1,20 +1,22 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import MainLayout from "../components/layout/MainLayout";
 
 import Home from "../pages/home/Home";
 import Login from "../pages/auth/Login";
 import Register from "../pages/auth/Register";
-//import PaymentPage from "../pages/pay/PaymentPage";
-import PaymentPage from "../pages/pay/PaymentPage";
+import SearchCourse from "../pages/searchCourse/SearchCourse";
+import DetailCourse from "../pages/detailCourse/DetailCourse";
+import Cart from "../pages/cart/Cart"
 // import Profile from "../pages/user/Profile";
 
 import { useAuth } from "../context/AuthContext";
 
 function PrivateRoute({ children, roles }) {
   const { user } = useAuth();
+  const location = useLocation();
 
   if (!user) {
-    return <Navigate to="/login" />;
+    return <Navigate to="/" state={{ from: location.pathname }} replace />;
   }
 
   if (roles && !roles.includes(user.role)) {
@@ -35,6 +37,8 @@ export default function AppRoutes() {
         {/* Layout */}
         <Route element={<MainLayout />}>
           <Route path="/" element={<Home />} />
+          <Route path="/search" element={<SearchCourse />} />
+          <Route path="/courses/:id" element={<DetailCourse />} />
 
           <Route
             path="/profile"
@@ -48,14 +52,11 @@ export default function AppRoutes() {
             path="/cart"
             element={
               <PrivateRoute roles={["STUDENT", "INSTRUCTOR", "ADMIN"]}>
-                {/* <Cart /> */}
+                <Cart />
               </PrivateRoute>
             }
           />
         </Route>
-      </Routes>
-      <Routes>
-        <Route path="/payment" element={<PaymentPage />} />
       </Routes>
     </BrowserRouter>
   );
