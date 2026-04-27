@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useCart } from "../../context/CartContext";
+import CategoryMenu from "../category/CategoryMenu"
 import BadgeIcon from "../common/BadgeIcon";
 import cartIcon from "../../assets/cart.png";
 import searchIcon from "../../assets/search.png"
@@ -53,6 +54,7 @@ export default function Header() {
             Elearning
           </Link>
 
+          <CategoryMenu/>
         </div>
 
         <div className="header-center">

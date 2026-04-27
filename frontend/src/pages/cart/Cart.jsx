@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useCart } from "../../context/CartContext";
 import { createPayment } from "../../services/paymentApi";
-import "./Cart.css";
+import "./cart.css";
 
 export default function Cart() {
     const { user } = useAuth();

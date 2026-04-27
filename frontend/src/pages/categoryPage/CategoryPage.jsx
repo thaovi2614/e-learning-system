@@ -1,12 +1,17 @@
+import { useParams } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { getCategoryBySlug } from "../../services/categoryApi";
 import { getCourses } from "../../services/courseApi";
 import CourseList from "../../components/courseList/CourseList";
 import Pagination from "../../components/paginate/Pagination";
-import "./home.css";
+import "./categoryPage.css";
 
-export default function Home() {
+export default function CategoryPage() {
+    const { "*": slug } = useParams();
+
     const [courses, setCourses] = useState([]);
+    const [categoryName, setCategoryName] = useState("");
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
 
@@ -14,12 +19,18 @@ export default function Home() {
     const navigate = useNavigate();
 
     async function fetchData(p = 1, shouldScroll = false) {
-        const res = await getCourses({ page: p, size: 5 });
+        // 🔥 lấy courses theo category
+        const res = await getCourses({
+            category: slug,
+            page: p,
+            size: 5
+        });
 
         setCourses(res.data.items);
         setTotalPages(res.data.total_pages);
         setPage(p);
 
+        // 🔥 scroll
         if (shouldScroll) {
             setTimeout(() => {
                 listRef.current?.scrollIntoView({
@@ -32,46 +43,31 @@ export default function Home() {
 
     useEffect(() => {
         fetchData(1);
-    }, []);
 
-    function formattedPrice(price) {
-        return new Intl.NumberFormat("vi-VN", {
-            style: "currency",
-            currency: "VND",
-        }).format(price);
-    }
+        // 🔥 lấy tên category
+        getCategoryBySlug({ slug }).then(res => {
+            setCategoryName(res.data.name);
+        });
+
+    }, [slug]);
 
     return (
-        <div className="home-container">
-            {/* 🔥 Khóa học nổi bật */}
-            <h1 className="section-title">Các khóa học nổi bật</h1>
+        <div className="category-container">
+            {/* 🔥 Title */}
+            <h2 className="section-title" ref={listRef}>
+                {categoryName}
+            </h2>
 
-            {courses[0] && (
-                <div
-                    className="course-card highlight"
-                    onClick={() => navigate(`/courses/${courses[0].id}`)}
-                >
-                    <div className="thumbnail">
-                        <img src={courses[0].thumbnail} alt="" />
-                    </div>
-
-                    <div className="course-content">
-                        <h3>{courses[0].name}</h3>
-                        <p>{courses[0].subtitle}</p>
-                        <p>{formattedPrice(courses[0].price)}</p>
-                    </div>
-                </div>
-            )}
-
-            {/* 🔥 Danh sách */}
-            <h1 className="section-title" ref={listRef}>
-                Tất cả các khóa học
-            </h1>
-
+            {/* 🔥 List */}
             <CourseList
                 courses={courses}
                 onClick={(id) => navigate(`/courses/${id}`)}
             />
+
+            {/* 🔥 Empty */}
+            {courses.length === 0 && (
+                <p>Không có khóa học trong danh mục này</p>
+            )}
 
             {/* 🔥 Pagination */}
             <Pagination

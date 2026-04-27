@@ -9,6 +9,7 @@ from app.configs.jwt_config import init_jwt
 from app.configs.cloudinary_config import init_cloudinary
 
 from app.controllers.auth_controller import auth_bp
+from app.controllers.category_controller import category_bp
 from app.controllers.course_controller import course_bp
 from app.controllers.cart_controller import cart_bp
 from app.controllers.payment_controller import payment_bp
@@ -33,6 +34,7 @@ def create_app():
 
     # Register blueprints
     app.register_blueprint(auth_bp)
+    app.register_blueprint(category_bp)
     app.register_blueprint(course_bp)
     app.register_blueprint(cart_bp)
     app.register_blueprint(payment_bp)

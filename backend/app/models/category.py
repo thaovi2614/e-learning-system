@@ -5,6 +5,7 @@ class Category(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False, unique=True)
+    slug = db.Column(db.String(255), unique=True, nullable=True)
     active = db.Column(db.Boolean, default=True, nullable=False)
 
     parent_id = db.Column(db.Integer, db.ForeignKey("categories.id"))
@@ -14,5 +15,7 @@ class Category(db.Model):
         return {
             "id": self.id,
             "name": self.name,
-            "active": self.active
+            "slug": self.slug,
+            "active": self.active,
+            "parent_id": self.parent_id
         }

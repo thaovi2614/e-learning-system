@@ -4,6 +4,7 @@ import MainLayout from "../components/layout/MainLayout";
 import Home from "../pages/home/Home";
 import Login from "../pages/auth/Login";
 import Register from "../pages/auth/Register";
+import CategoryPage from "../pages/categoryPage/CategoryPage";
 import SearchCourse from "../pages/searchCourse/SearchCourse";
 import DetailCourse from "../pages/detailCourse/DetailCourse";
 import Cart from "../pages/cart/Cart"
@@ -37,6 +38,7 @@ export default function AppRoutes() {
         {/* Layout */}
         <Route element={<MainLayout />}>
           <Route path="/" element={<Home />} />
+          <Route path="/*" element={<CategoryPage />} />
           <Route path="/search" element={<SearchCourse />} />
           <Route path="/courses/:id" element={<DetailCourse />} />
 

@@ -1,0 +1,32 @@
+/* ===== PAGINATION ===== */
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 20px;
+}
+
+.pagination button {
+    padding: 6px 10px;
+    border: 1px solid #999;
+    background: white;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.2s;
+}
+
+.pagination button:hover:not(:disabled) {
+    background: #eee;
+}
+
+.pagination button.active {
+    background: #333;
+    color: white;
+    border-color: #333;
+}
+
+.pagination button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}

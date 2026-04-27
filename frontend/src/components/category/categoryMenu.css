@@ -1,0 +1,111 @@
+/* ============================================
+   CATEGORY MENU - Không nhảy layout
+   ============================================ */
+
+.category-menu {
+    position: relative;
+    height: 64px;          /* ✅ khớp với header height */
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    cursor: pointer;
+}
+
+.menu-title {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
+    transition: color 0.2s;
+    user-select: none;
+    padding: 0 4px;
+}
+
+.category-menu:hover .menu-title {
+    color: #fff;
+}
+
+.chevron-down {
+    transition: transform 0.2s;
+}
+
+.category-menu:hover .chevron-down {
+    transform: rotate(180deg);
+}
+
+/* ============================================
+   DROPDOWN WRAPPER - Thoát hoàn toàn khỏi flow
+   ============================================ */
+.cat-dropdown {
+    position: absolute;
+    top: 64px;            /* ✅ bằng đúng chiều cao header */
+    left: 0;
+    display: none;
+    z-index: 1000;
+    padding-top: 4px;     /* khoảng cách nhỏ với header */
+}
+
+.category-menu:hover .cat-dropdown {
+    display: flex;        /* ✅ flex để menu chính + submenu nằm ngang */
+}
+
+/* ============================================
+   MENU LIST
+   ============================================ */
+.cat-menu {
+    list-style: none;
+    margin: 0;
+    padding: 6px 0;
+    background: #1c1c2e;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    min-width: 230px;
+    border-radius: 10px;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+}
+
+.cat-menu-item {
+    position: relative;
+}
+
+.cat-menu-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 14px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s, color 0.15s;
+    border-radius: 6px;
+    margin: 0; 
+}
+
+.cat-menu-label:hover {
+    background: rgba(139, 92, 246, 0.15);
+    color: #fff;
+}
+
+.arrow-icon {
+    opacity: 0.5;
+    flex-shrink: 0;
+}
+
+/* ============================================
+   SUBMENU
+   ============================================ */
+.cat-menu-item > .cat-menu {
+    position: absolute;
+    top: 0;
+    left: 100%; /* ✅ khoảng cách nhỏ giữa menu và submenu */
+    display: none;
+    min-width: 220px;
+    border-radius: 10px;
+}
+
+.cat-menu-item:hover > .cat-menu {
+    display: block;
+}

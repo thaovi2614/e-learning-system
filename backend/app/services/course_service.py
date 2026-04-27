@@ -4,15 +4,18 @@ from app.models.category import Category
 from app.enums.user_role import UserRole
 from app.enums.course_type import CourseType
 from app.configs.database_config import db
+import app.services.category_service as CategoryService
 
 def find_course_by_id(id):
     course = Course.query.get(id)
     if not course:
         raise Exception("Khóa học không tồn tại")
     return course
+    
 
 def find_courses(data, is_admin=False):
     name = data.get("name","").strip()
+    slug_path = data.get("category")
 
     page = int(data.get("page", 1))
     size = int(data.get("size", 10))
@@ -23,6 +26,22 @@ def find_courses(data, is_admin=False):
 
     if name:
         query = query.filter(Course.name.ilike(f"%{name}%"))
+
+    if slug_path:
+        category = CategoryService.find_category_by_slug_path(slug_path)
+
+        if not category:
+            return {
+                "items": [],
+                "page": page,
+                "size": size,
+                "total": 0,
+                "total_pages": 0
+            }
+
+        ids = CategoryService.get_all_child_ids(category)
+
+        query = query.filter(Course.category_id.in_(ids))
 
     pagination = query.paginate(page=page, per_page=size, error_out=False)
 
