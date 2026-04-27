@@ -43,9 +43,19 @@ export default function Header() {
 
   const menuItems = [
     { label: "Thông tin cá nhân", onClick: () => navigate("/profile") },
-    { label: "Khóa học của tôi", onClick: () => navigate("/my-courses") },
+
+    user?.role === "STUDENT" && {
+      label: "Khóa học của tôi",
+      onClick: () => navigate("/my-courses"),
+    },
+
+    ["INSTRUCTOR", "ADMIN"].includes(user?.role) && {
+      label: "Quản lý khóa học",
+      onClick: () => navigate("/manage-course"),
+    },
+
     { label: "Đăng xuất", onClick: logout, danger: true },
-  ]
+  ].filter(Boolean);
 
   return (
     <nav className="navbar navbar-dark bg-dark">
@@ -55,7 +65,7 @@ export default function Header() {
             Elearning
           </Link>
 
-          <CategoryMenu/>
+          <CategoryMenu />
         </div>
 
         <div className="header-center">
@@ -68,17 +78,17 @@ export default function Header() {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
             <button type="submit" className="search-btn">
-              <img src={searchIcon} alt=""/>
+              <img src={searchIcon} alt="" />
             </button>
           </form>
         </div>
-        
+
 
         <div className="header-right">
-          <BadgeIcon 
-            icon={cartIcon} 
-            count={cartCount} 
-            onClick={() => navigate("/cart")} 
+          <BadgeIcon
+            icon={cartIcon}
+            count={cartCount}
+            onClick={() => navigate("/cart")}
           />
 
           {!user ? (
@@ -103,10 +113,10 @@ export default function Header() {
                 <div className="avatar-dropdown">
                   {menuItems.map((item, i) => (
                     <div key={i}>
-                      {i > 0 && <div className="avatar-divider"/>}
+                      {i > 0 && <div className="avatar-divider" />}
                       <div
                         className={`avatar-menu-item ${item.danger ? "danger" : ""}`}
-                        onClick={() => {item.onClick(); setOpenProfile(false); }}
+                        onClick={() => { item.onClick(); setOpenProfile(false); }}
                       >
                         {item.label}
                       </div>

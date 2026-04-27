@@ -24,7 +24,7 @@ export default function CourseManagePage() {
 
   const loadCourses = async () => {
     try {
-      const res = await api.get("/courses/my");
+      const res = await api.get("/courses/manage");
       setCourses(res.data.items || []);
     } catch (error) {
       alert(error.response?.data?.message || "Không tải được khóa học");
