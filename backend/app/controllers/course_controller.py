@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
+from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request, jwt_required
 from app.middlewares.jwt_middleware import role_required
 import app.services.course_service as CourseService
 import app.services.user_service as UserService
@@ -37,6 +37,23 @@ def get_courses():
         "total": result["total"],
         "total_pages": result["total_pages"]
     }), 200
+
+@course_bp.route("/my-courses", methods=["GET"])
+@jwt_required()
+def get_my_courses():
+    data = request.args.to_dict()
+
+    user_id = get_jwt_identity()
+
+    result = CourseService.get_my_courses(data, user_id)
+
+    return jsonify({
+        "items": [c.to_dict() for c in result["items"]],
+        "page": result["page"],
+        "size": result["size"],
+        "total": result["total"],
+        "total_pages": result["total_pages"]
+    })
 
 @course_bp.route("", methods=["POST"])
 @role_required("INSTRUCTOR")

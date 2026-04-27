@@ -43,6 +43,7 @@ export default function Header() {
 
   const menuItems = [
     { label: "Thông tin cá nhân", onClick: () => navigate("/profile") },
+    { label: "Khóa học của tôi", onClick: () => navigate("/my-courses") },
     { label: "Đăng xuất", onClick: logout, danger: true },
   ]
 

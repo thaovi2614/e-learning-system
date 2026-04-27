@@ -1,6 +1,7 @@
 from app.models.course import Course
 from app.models.user import User
 from app.models.category import Category
+from app.models.enrollment import Enrollment
 from app.enums.user_role import UserRole
 from app.enums.course_type import CourseType
 from app.configs.database_config import db
@@ -12,6 +13,24 @@ def find_course_by_id(id):
         raise Exception("Khóa học không tồn tại")
     return course
     
+def get_my_courses(data, user_id):
+    page = int(data.get("page", 1))
+    size = int(data.get("size", 10))
+
+    query = db.session.query(Course).join(Enrollment).filter(
+        Enrollment.user_id == user_id,
+        Course.active.is_(True)
+    ).order_by(Enrollment.created_at.desc())
+
+    pagination = query.paginate(page=page, per_page=size, error_out=False)
+
+    return {
+        "items": pagination.items,
+        "page": page,
+        "size": size,
+        "total": pagination.total,
+        "total_pages": pagination.pages
+    }
 
 def find_courses(data, is_admin=False):
     name = data.get("name","").strip()

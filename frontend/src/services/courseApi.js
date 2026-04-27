@@ -4,6 +4,10 @@ export const getCourses = (params) => {
     return api.get("/courses", { params });
 };
 
+export const getMyCourses = (params) => {
+    return api.get("/courses/my-courses", { params });
+};
+
 export const getCourseById = (id) => {
     return api.get(`/courses/${id}`);
 };

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../../services/api";
+import { getCategories } from "../../services/categoryApi";
 import "./categoryMenu.css";
 
 export default function CategoryMenu() {
@@ -12,7 +12,7 @@ export default function CategoryMenu() {
         if (fetchedRef.current) return;
         fetchedRef.current = true;
 
-        api.get("/categories").then(res => {
+        getCategories().then(res => {
             setCategories(res.data);
         });
     }, []);

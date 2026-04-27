@@ -8,6 +8,8 @@ import CategoryPage from "../pages/categoryPage/CategoryPage";
 import SearchCourse from "../pages/searchCourse/SearchCourse";
 import DetailCourse from "../pages/detailCourse/DetailCourse";
 import Cart from "../pages/cart/Cart"
+import MyCourses from "../pages/myCourses/MyCourses"
+import LearnCourse from "../pages/learnCourse/LearnCourse"
 // import Profile from "../pages/user/Profile";
 
 import { useAuth } from "../context/AuthContext";
@@ -47,6 +49,22 @@ export default function AppRoutes() {
             element={
               <PrivateRoute roles={["STUDENT", "INSTRUCTOR", "ADMIN"]}>
                 {/* <Profile /> */}
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/my-courses"
+            element={
+              <PrivateRoute roles={["STUDENT", "INSTRUCTOR", "ADMIN"]}>
+                <MyCourses />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/learn/:id"
+            element={
+              <PrivateRoute roles={["STUDENT", "INSTRUCTOR", "ADMIN"]}>
+                <LearnCourse />
               </PrivateRoute>
             }
           />
