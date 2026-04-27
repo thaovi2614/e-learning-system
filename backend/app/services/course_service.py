@@ -132,6 +132,52 @@ def add_course(data, user_id):
 
     return new_course
 
+# def update_course(data, user_id, course_id):
+#     course = Course.query.get(course_id)
+
+#     if not course:
+#         raise Exception("Khóa học không tồn tại")
+
+#     if course.instructor_id != user_id:
+#         raise Exception("Bạn không có quyền sửa khóa học này")
+    
+#     name = data.get("name","").strip()
+#     subtitle = data.get("subtitle","").strip()
+#     type_str = data.get("type")
+#     price = data.get("price")
+
+#     if name:
+#         existed = Course.query.filter(
+#             Course.name == name,
+#             Course.instructor_id == user_id,
+#             Course.id != course_id
+#         ).first()
+
+#         if existed:
+#             raise Exception("Bạn đã có khóa học trùng tên")
+
+#         course.name = name
+
+#     if subtitle is not None:
+#         course.subtitle = subtitle
+
+#     if type_str:
+#         try:
+#             course.type = CourseType[type_str]
+#         except KeyError:
+#             raise Exception("Type không hợp lệ")
+
+#     if price is not None:
+#         if float(price) < 0:
+#             raise Exception("Giá phải >= 0")
+#         course.price = price
+
+#     course.description = data.get("description")
+#     course.thumbnail = data.get("thumbnail")
+
+#     db.session.commit()
+
+#     return course
 def update_course(data, user_id, course_id):
     course = Course.query.get(course_id)
 
@@ -141,11 +187,12 @@ def update_course(data, user_id, course_id):
     if course.instructor_id != user_id:
         raise Exception("Bạn không có quyền sửa khóa học này")
     
-    name = data.get("name","").strip()
-    subtitle = data.get("subtitle","").strip()
+    name = data.get("name", "").strip()
+    subtitle = data.get("subtitle", "").strip()
     type_str = data.get("type")
     price = data.get("price")
 
+    # name
     if name:
         existed = Course.query.filter(
             Course.name == name,
@@ -158,22 +205,38 @@ def update_course(data, user_id, course_id):
 
         course.name = name
 
-    if subtitle is not None:
+    # subtitle
+    if "subtitle" in data:
         course.subtitle = subtitle
 
+    # type
     if type_str:
         try:
             course.type = CourseType[type_str]
         except KeyError:
             raise Exception("Type không hợp lệ")
 
+    # price
     if price is not None:
         if float(price) < 0:
             raise Exception("Giá phải >= 0")
         course.price = price
 
-    course.description = data.get("description")
-    course.thumbnail = data.get("thumbnail")
+    # description
+    if "description" in data:
+        course.description = data.get("description")
+
+    # thumbnail
+    if "thumbnail" in data:
+        course.thumbnail = data.get("thumbnail")
+
+    if "active" in data:
+        active_value = data.get("active")
+
+        if isinstance(active_value, bool):
+            course.active = active_value
+        else:
+            course.active = str(active_value).lower() == "true"
 
     db.session.commit()
 
@@ -199,4 +262,12 @@ def delete_course(user_id, course_id):
 
     db.session.commit()
 
+
     return course
+def find_my_courses(user_id):
+    courses = Course.query.filter_by(
+        instructor_id=user_id,
+        active=True
+    ).order_by(Course.id.desc()).all()
+
+    return courses

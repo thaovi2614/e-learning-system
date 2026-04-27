@@ -12,4 +12,18 @@ class Chapter(db.Model):
 
     course_id = db.Column(db.Integer, db.ForeignKey("courses.id"), nullable=False)
 
-    lessons = relationship("Lesson", backref="chapter", cascade="all, delete-orphan", order_by="Lesson.order_index")
+    lessons = relationship(
+        "Lesson",
+        backref="chapter",
+        cascade="all, delete-orphan",
+        order_by="Lesson.order_index"
+    )
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "title": self.title,
+            "order_index": self.order_index,
+            "active": self.active,
+            "course_id": self.course_id
+        }
