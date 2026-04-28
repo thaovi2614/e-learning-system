@@ -18,6 +18,7 @@ from app.controllers.cart_controller import cart_bp
 from app.controllers.payment_controller import payment_bp
 from app.controllers.lesson_controller import lesson_bp
 from app.controllers.chapter_controller import chapter_bp
+from app.controllers.user_controller import user_bp
 
 from app import models
 
@@ -45,6 +46,7 @@ def create_app():
     app.register_blueprint(payment_bp)
     app.register_blueprint(lesson_bp)
     app.register_blueprint(chapter_bp)
+    app.register_blueprint(user_bp, url_prefix='/api/user')
 
     # Global error handler
     @app.errorhandler(Exception)
