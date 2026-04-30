@@ -1,7 +1,6 @@
 from flask import Blueprint, request, jsonify, session
 from flask_jwt_extended import jwt_required, get_jwt_identity
-
-from app.services.payment_service import create_payment, handle_momo_ipn
+import app.services.payment_service as PaymentService
 
 payment_bp = Blueprint("payment", __name__, url_prefix="/api/payments")
 
@@ -14,7 +13,7 @@ def create_momo():
     key = f"cart_{user_id}"
     cart = session.get(key, [])
     
-    res, code = create_payment(user_id, cart)
+    res, code = PaymentService.create_payment(user_id, cart)
     
     return jsonify(res), code
 
@@ -26,5 +25,5 @@ def momo_ipn():
     if not data:
         return jsonify({"message": "Thiếu dữ liệu IPN"}), 400
 
-    res, code = handle_momo_ipn(data)
+    res, code = PaymentService.handle_momo_ipn(data)
     return jsonify(res), code

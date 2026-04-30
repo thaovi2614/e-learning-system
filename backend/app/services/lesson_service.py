@@ -1,14 +1,17 @@
 import os
 from werkzeug.utils import secure_filename
 
+from sqlalchemy.sql import func
 from app.configs.database_config import db
 from app.models.course import Course
 from app.models.chapter import Chapter
 from app.models.lesson import Lesson
+from app.models.enrollment import Enrollment
 from app.models.video_lesson import VideoLesson
 from app.models.slide_lesson import SlideLesson
 from app.enums.lesson_type import LessonType
 from app.models.quiz import Quiz
+import app.services.cloudinary_service as CloudinaryService
 
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 UPLOAD_FOLDER = os.path.join(BASE_DIR, "uploads")
@@ -35,6 +38,23 @@ def check_instructor_owns_chapter(user_id, chapter_id):
         raise Exception("Bạn không có quyền chỉnh sửa nội dung khóa học này")
 
     return chapter
+
+def can_access_lesson(user_id, lesson):
+    # lấy course_id từ lesson
+    course_id = lesson.chapter.course_id
+
+    enrollment = Enrollment.query.filter_by(
+        user_id=user_id,
+        course_id=course_id
+    ).first()
+
+    return enrollment is not None
+
+def find_lesson_by_id(id):
+    lesson = db.session.get(Lesson, id)
+    if not lesson:
+        raise Exception("Bài học không tồn tại")
+    return lesson
 
 
 # def save_upload_file(file, lesson_type):
@@ -84,7 +104,6 @@ def add_lesson(data, file, user_id, chapter_id):
 
     title = data.get("title", "").strip()
     type_str = data.get("type")
-    order_index = data.get("order_index", 1)
 
     if not title:
         raise Exception("Tên bài học không được để trống")
@@ -93,21 +112,28 @@ def add_lesson(data, file, user_id, chapter_id):
         raise Exception("Loại bài học không được để trống")
 
     try:
-        order_index = int(order_index)
-    except:
-        raise Exception("Thứ tự phải là số")
-
-    try:
         lesson_type = LessonType[type_str]
     except KeyError:
         raise Exception("Loại bài học không hợp lệ")
 
+    max_index = (
+        db.session.query(func.max(Lesson.order_index))
+        .filter_by(chapter_id=chapter_id, active=True)
+        .scalar()
+    ) or 0
+
+    order_index = max_index + 1
+
     if lesson_type.name == "VIDEO":
-        video_url = data.get("videoUrl", "").strip()
+        video_url = ""
 
         if file:
-            video_url = save_upload_file(file, "VIDEO")
+            upload_result = CloudinaryService.upload_video(file, user_id)
+            if not upload_result:
+                raise Exception("Upload video thất bại")
 
+            video_url = upload_result.get("original_url") or upload_result.get("stream_url")
+        
         if not video_url:
             raise Exception("Video phải có link hoặc file upload")
 
@@ -120,13 +146,17 @@ def add_lesson(data, file, user_id, chapter_id):
         )
 
     elif lesson_type.name == "SLIDE":
-        slide_file = data.get("slideFile", "").strip()
+        slide_file = ""
 
         if file:
-            slide_file = save_upload_file(file, "SLIDE")
+            upload_result = CloudinaryService.upload_pdf(file, user_id)
+            if not upload_result:
+                raise Exception("Upload PDF thất bại")
+
+            slide_file = upload_result.get("secure_url")
 
         if not slide_file:
-            raise Exception("Slide phải có link hoặc file upload")
+            raise Exception("Slide phải có file hoặc link")
 
         lesson = SlideLesson(
             title=title,
@@ -135,14 +165,19 @@ def add_lesson(data, file, user_id, chapter_id):
             chapter_id=chapter_id,
             slideFile=slide_file
         )
+
     elif lesson_type.name == "QUIZ":
-        quiz_file = data.get("quizFile", "").strip()
+        quiz_file = ""
 
         if file:
-            quiz_file = save_upload_file(file, "QUIZ")
+            upload_result = CloudinaryService.upload_pdf(file, user_id)
+            if not upload_result:
+                raise Exception("Upload file quiz thất bại")
+
+            quiz_file = upload_result.get("secure_url")
 
         if not quiz_file:
-            raise Exception("Bài tập phải có link hoặc file upload")
+            raise Exception("Quiz phải có file")
 
         lesson = Lesson(
             title=title,
@@ -188,31 +223,33 @@ def update_lesson(data, file, user_id, lesson_id):
 
     check_instructor_owns_chapter(user_id, lesson.chapter_id)
 
-    if "title" in data:
-        title = data.get("title", "").strip()
-        if not title:
-            raise Exception("Tên bài học không được để trống")
+    title = data.get("title", "").strip()
+    if title:
         lesson.title = title
 
-    if "order_index" in data:
-        try:
-            lesson.order_index = int(data.get("order_index"))
-        except:
-            raise Exception("Thứ tự phải là số")
-
+    # ================= VIDEO =================
     if isinstance(lesson, VideoLesson):
         if file:
-            lesson.videoUrl = save_upload_file(file, "VIDEO")
-        elif data.get("videoUrl"):
-            lesson.videoUrl = data.get("videoUrl").strip()
+            upload_result = CloudinaryService.upload_video(file, user_id)
+            if not upload_result:
+                raise Exception("Upload video thất bại")
 
-    if isinstance(lesson, SlideLesson):
+            lesson.videoUrl = (
+                upload_result.get("original_url")
+                or upload_result.get("secure_url")
+            )
+
+    # ================= SLIDE =================
+    elif isinstance(lesson, SlideLesson):
         if file:
-            lesson.slideFile = save_upload_file(file, "SLIDE")
-        elif data.get("slideFile"):
-            lesson.slideFile = data.get("slideFile").strip()
-    
-    if lesson.type.name == "QUIZ":
+            upload_result = CloudinaryService.upload_pdf(file, user_id)
+            if not upload_result:
+                raise Exception("Upload PDF thất bại")
+
+            lesson.slideFile = upload_result.get("secure_url")
+
+    # ================= QUIZ =================
+    elif lesson.type.name == "QUIZ":
         quiz = lesson.quiz
 
         if not quiz:
@@ -224,9 +261,11 @@ def update_lesson(data, file, user_id, lesson_id):
             db.session.add(quiz)
 
         if file:
-            quiz.quizFile = save_upload_file(file, "QUIZ")
-        elif data.get("quizFile"):
-            quiz.quizFile = data.get("quizFile").strip()
+            upload_result = CloudinaryService.upload_pdf(file, user_id)
+            if not upload_result:
+                raise Exception("Upload file quiz thất bại")
+
+            quiz.quizFile = upload_result.get("secure_url")
 
     db.session.commit()
 
@@ -241,7 +280,24 @@ def delete_lesson(user_id, lesson_id):
 
     check_instructor_owns_chapter(user_id, lesson.chapter_id)
 
+    chapter_id = lesson.chapter_id
+    deleted_index = lesson.order_index
+
     lesson.active = False
+
+    lessons_to_update = (
+        Lesson.query
+        .filter(
+            Lesson.chapter_id == chapter_id,
+            Lesson.active == True,
+            Lesson.order_index > deleted_index
+        )
+        .all()
+    )
+
+    for l in lessons_to_update:
+        l.order_index -= 1
+
     db.session.commit()
 
     return lesson

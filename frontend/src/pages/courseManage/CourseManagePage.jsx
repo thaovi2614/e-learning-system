@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../../services/api";
+import { getCoursesManage, createCourse, updateCourse, deleteCourse } from "../../services/courseApi";
+import { getCategories } from "../../services/categoryApi";
 
 export default function CourseManagePage() {
   const navigate = useNavigate();
@@ -18,13 +19,14 @@ export default function CourseManagePage() {
     price: "",
     description: "",
     thumbnail: "",
+    thumbnailFile: null,
     category_id: "",
     active: true,
   });
 
   const loadCourses = async () => {
     try {
-      const res = await api.get("/courses/manage");
+      const res = await getCoursesManage();
       setCourses(res.data.items || []);
     } catch (error) {
       alert(error.response?.data?.message || "Không tải được khóa học");
@@ -33,7 +35,7 @@ export default function CourseManagePage() {
 
   const loadCategories = async () => {
     try {
-      const res = await api.get("/categories");
+      const res = await getCategories();
 
       if (Array.isArray(res.data)) {
         setCategories(res.data);
@@ -98,7 +100,7 @@ export default function CourseManagePage() {
       description: "",
       thumbnail: "",
       category_id: "",
-      active: true, // 👈 thêm
+      active: true,
     });
     setEditingId(null);
     setShowForm(false);
@@ -138,22 +140,36 @@ export default function CourseManagePage() {
         return;
       }
 
-      const payload = {
-        name: form.name,
-        subtitle: form.subtitle,
-        type: form.type,
-        price: Number(form.price),
-        category_id: Number(form.category_id),
-        description: form.description,
-        thumbnail: form.thumbnail,
-        active: form.active,
-      };
+      // const payload = {
+      //   name: form.name,
+      //   subtitle: form.subtitle,
+      //   type: form.type,
+      //   price: Number(form.price),
+      //   category_id: Number(form.category_id),
+      //   description: form.description,
+      //   thumbnail: form.thumbnail,
+      //   active: form.active,
+      // };
+
+      const formData = new FormData();
+
+      formData.append("name", form.name);
+      formData.append("subtitle", form.subtitle);
+      formData.append("type", form.type);
+      formData.append("price", form.price);
+      formData.append("category_id", form.category_id);
+      formData.append("description", form.description);
+      formData.append("active", form.active);
+
+      if (form.thumbnailFile) {
+        formData.append("thumbnail", form.thumbnailFile);
+      }
 
       if (editingId) {
-        await api.put(`/courses/${editingId}`, payload);
+        await updateCourse(editingId, formData);
         alert("Cập nhật khóa học thành công");
       } else {
-        await api.post("/courses", payload);
+        await createCourse(formData);
         alert("Tạo khóa học thành công");
       }
 
@@ -173,11 +189,11 @@ export default function CourseManagePage() {
       name: course.name || "",
       subtitle: course.subtitle || "",
       type: course.type || "TU_CHON",
-      price: course.price || "",
+      price: course.price || "0",
       description: course.description || "",
       thumbnail: course.thumbnail || "",
       category_id: course.category_id || "",
-      active: course.active ?? true, // 👈 thêm dòng này
+      active: course.active ?? true,
     });
   };
 
@@ -185,7 +201,7 @@ export default function CourseManagePage() {
     if (!window.confirm("Xác nhận xóa khóa học này?")) return;
 
     try {
-      await api.delete(`/courses/${id}`);
+      await deleteCourse(id);
       alert("Đã xóa khóa học");
       loadCourses();
     } catch (error) {
@@ -218,7 +234,7 @@ export default function CourseManagePage() {
             onChange={(e) => setKeyword(e.target.value)}
           />
 
-          <button style={lightBtn} onClick={loadCourses}>
+          <button style={lightBtn} onClick={() => setKeyword("")}>
             Làm mới
           </button>
         </div>
@@ -237,7 +253,7 @@ export default function CourseManagePage() {
           </div>
 
           <div style={statCard}>
-            <p style={statLabel}>Đã xóa / tạm ẩn</p>
+            <p style={statLabel}>Tạm ẩn</p>
             <h2 style={statNumber}>
               {courses.filter((c) => !c.active).length}
             </h2>
@@ -309,7 +325,7 @@ export default function CourseManagePage() {
 
                   <td style={td}>
                     <span style={course.active ? activeBadge : inactiveBadge}>
-                      {course.active ? "Hoạt động" : "Đã xóa"}
+                      {course.active ? "Hoạt động" : "Tạm ẩn"}
                     </span>
                   </td>
 
@@ -321,12 +337,12 @@ export default function CourseManagePage() {
                       Sửa
                     </button>
 
-                    <button
+                    {/* <button
                       style={deleteBtn}
                       onClick={() => deleteCourse(course.id)}
                     >
                       Xóa
-                    </button>
+                    </button> */}
                   </td>
                 </tr>
               ))}
@@ -372,7 +388,7 @@ export default function CourseManagePage() {
               <input
                 style={input}
                 name="price"
-                type="number"
+                type="price"
                 placeholder="Giá"
                 value={form.price}
                 onChange={handleChange}
@@ -395,15 +411,6 @@ export default function CourseManagePage() {
                 ))}
               </select>
 
-              <input
-                style={input}
-                name="thumbnail"
-                placeholder="Dán link ảnh thumbnail"
-                value={form.thumbnail}
-                onChange={handleChange}
-              />
-            </div>
-            <div style={row}>
               <select
                 style={input}
                 value={form.active ? "true" : "false"}
@@ -414,8 +421,30 @@ export default function CourseManagePage() {
                 <option value="true">Hoạt động</option>
                 <option value="false">Tạm ẩn</option>
               </select>
+            </div>
+            
+            <div className="mb-3">
+              <div className="d-flex align-items-center gap-3">
+                <label htmlFor="formFile" className="form-label mb-0">Thumbnail:</label>
 
-              <div></div>
+                <input
+                  className="form-control"
+                  type="file"
+                  id="formFile"
+                  onChange={(e) => {
+                    const file = e.target.files[0];
+                    setForm({ ...form, thumbnailFile: file });
+
+                    if (file) {
+                      setForm(prev => ({
+                        ...prev,
+                        thumbnailFile: file,
+                        thumbnail: URL.createObjectURL(file)
+                      }));
+                    }
+                  }}
+                />
+              </div>
             </div>
 
             {form.thumbnail && (
@@ -699,7 +728,7 @@ const previewText = {
 
 const previewImg = {
   width: 130,
-  height: 85,
+  height: 130,
   objectFit: "cover",
   borderRadius: 10,
   border: "1px solid #e2e8f0",

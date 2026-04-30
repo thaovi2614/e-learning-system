@@ -1,41 +1,37 @@
-import { useEffect, useState } from "react";
-import api from "../../services/api";
+import { useState } from "react";
 
-export default function ForumTab({ courseId }) {
+export default function ForumTab() {
     const [posts, setPosts] = useState([]);
     const [content, setContent] = useState("");
 
-    useEffect(() => {
-        api.get(`/courses/${courseId}/posts`)
-            .then(res => setPosts(res.data));
-    }, [courseId]);
-
-    const handlePost = async () => {
+    const handlePost = () => {
         if (!content.trim()) return;
 
-        await api.post(`/courses/${courseId}/posts`, { content });
-        setContent("");
+        setPosts(prev => [
+            ...prev,
+            { id: Date.now(), user_name: "Bạn", content }
+        ]);
 
-        const res = await api.get(`/courses/${courseId}/posts`);
-        setPosts(res.data);
+        setContent("");
     };
 
     return (
-        <div>
+        <div className="forum-container">
             <h3>Diễn đàn</h3>
 
-            {/* INPUT */}
-            <textarea
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                placeholder="Viết câu hỏi..."
-            />
-            <button onClick={handlePost}>Đăng</button>
+            <div className="forum-input">
+                <textarea
+                    value={content}
+                    onChange={(e) => setContent(e.target.value)}
+                    placeholder="Viết câu hỏi..."
+                />
+                <button onClick={handlePost}>Đăng</button>
+            </div>
 
-            {/* LIST */}
             {posts.map(p => (
-                <div key={p.id}>
-                    <b>{p.user_name}</b>: {p.content}
+                <div key={p.id} className="post-item">
+                    <div className="post-user">{p.user_name}</div>
+                    <div className="post-content">{p.content}</div>
                 </div>
             ))}
         </div>

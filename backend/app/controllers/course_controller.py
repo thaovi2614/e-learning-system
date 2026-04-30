@@ -97,7 +97,7 @@
 #         "total_pages": 1
 #     }), 200
 
-
+import traceback
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request, jwt_required
 from app.middlewares.jwt_middleware import role_required
@@ -112,7 +112,7 @@ course_bp = Blueprint("course", __name__, url_prefix="/api/courses")
 def get_manage_courses():
     try:
         user_id = int(get_jwt_identity())
-        courses = CourseService.find_my_courses(user_id)
+        courses = CourseService.find_instructor_manage_courses(user_id)
 
         return jsonify({
             "items": [c.to_dict() for c in courses],
@@ -123,7 +123,10 @@ def get_manage_courses():
         }), 200
 
     except Exception as e:
-        return jsonify({"message": str(e)}), 400
+        return jsonify({
+            "message": str(e),
+            "trace": traceback.format_exc()
+        }), 500
 
 
 @course_bp.route("/my-courses", methods=["GET"])
@@ -195,10 +198,11 @@ def get_courses():
 @role_required("INSTRUCTOR")
 def add_course():
     try:
-        data = request.get_json()
+        data = request.form.to_dict()
+        file = request.files.get("thumbnail")
         user_id = int(get_jwt_identity())
 
-        course = CourseService.add_course(data, user_id)
+        course = CourseService.add_course(data, file, user_id)
 
         return jsonify({
             "message": "Tạo khóa học thành công",
@@ -213,10 +217,11 @@ def add_course():
 @role_required("INSTRUCTOR")
 def update_course(id):
     try:
-        data = request.get_json()
+        data = request.form.to_dict()
+        file = request.files.get("thumbnail")
         user_id = int(get_jwt_identity())
 
-        course = CourseService.update_course(data, user_id, id)
+        course = CourseService.update_course(data, file, user_id, id)
 
         return jsonify({
             "message": "Cập nhật khóa học thành công",

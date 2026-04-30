@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams, Outlet } from "react-router-dom";
 import { useState } from "react";
 import LessonTab from "./LessonTab";
 import ForumTab from "./ForumTab";
@@ -7,10 +7,17 @@ import "./learnCourse.css";
 export default function LearnCourse() {
     const { id } = useParams();
     const [tab, setTab] = useState("lesson");
+    const navigate = useNavigate();
 
     return (
         <div className="learn-container">
-            <h2>Học khóa học</h2>
+
+            <button 
+                className="btn"
+                onClick={() => navigate("/my-courses")}
+            >
+                ← Khóa học
+            </button>
 
             {/* TAB */}
             <div className="tabs">
@@ -31,8 +38,25 @@ export default function LearnCourse() {
 
             {/* CONTENT */}
             <div className="tab-content">
-                {tab === "lesson" && <LessonTab courseId={id} />}
+
+                {tab === "lesson" && (
+                    <div className="learn-layout">
+
+                        {/* LEFT */}
+                        <div className="learn-sidebar">
+                            <LessonTab courseId={id} />
+                        </div>
+
+                        {/* RIGHT */}
+                        <div className="learn-content">
+                            <Outlet />
+                        </div>
+
+                    </div>
+                )}
+
                 {tab === "forum" && <ForumTab courseId={id} />}
+
             </div>
         </div>
     );

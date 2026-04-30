@@ -1,6 +1,6 @@
 import os
 from werkzeug.security import generate_password_hash, check_password_hash
-import cloudinary.uploader 
+import app.services.cloudinary_service as CloudinaryService
 
 class UserService:
     @staticmethod
@@ -36,8 +36,7 @@ class UserService:
         if not user:
             return None
             
-        # Upload lên Cloudinary (dựa trên backend/app/configs/cloudinary_config.py)
-        upload_result = cloudinary.uploader.upload(file)
-        user.avatar = upload_result['secure_url']
+        user.avatar = CloudinaryService.update_avatar(file, user_id)
+        
         db.session.commit()
         return user.avatar

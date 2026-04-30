@@ -5,44 +5,44 @@
 }
 
 /* HEADER */
-.course-header {
+.detail-container .course-header {
     border: 1px solid #999;
     padding: 20px;
     margin-bottom: 20px;
 }
 
 /* BODY */
-.course-body {
+.detail-container .course-body {
     display: flex;
     gap: 20px;
 }
 
 /* LEFT */
-.left {
+.detail-container .left {
     flex: 2;
 }
 
-.section {
+.detail-container .section {
     border: 1px solid #999;
     padding: 16px;
     margin-bottom: 16px;
 }
 
 /* RIGHT */
-.right {
+.detail-container .right {
     flex: 1;
     border: 1px solid #999;
     padding: 16px;
 }
 
-.right img {
+.detail-container .right img {
     width: 100%;
     height: 200px;
     object-fit: cover;
     margin-bottom: 10px;
 }
 
-.right button {
+.detail-container .right button {
     width: 100%;
     margin-top: 10px;
     padding: 10px;
@@ -50,14 +50,61 @@
 }
 
 /* RELATED */
-.related {
+.detail-container .related {
     display: flex;
     gap: 10px;
 }
 
-.related div {
+.detail-container .related div {
     flex: 1;
     border: 1px solid #999;
     padding: 10px;
     text-align: center;
+}
+
+/* CHAPTER LIST */
+.detail-container .chapter-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* CHAPTER ITEM */
+.detail-container .chapter-item {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+/* HEADER */
+.detail-container .chapter-header {
+    padding: 12px 16px;
+    background: #f7f7f7;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    font-weight: 500;
+    transition: 0.2s;
+}
+
+.detail-container .chapter-header:hover {
+    background: #eee;
+}
+
+/* LESSON LIST */
+.detail-container .lesson-list {
+    background: #fff;
+    border-top: 1px solid #ddd;
+}
+
+/* LESSON ITEM */
+.detail-container .lesson-item {
+    padding: 10px 16px;
+    border-bottom: 1px solid #eee;
+    font-size: 14px;
+    transition: 0.2s;
+}
+
+.detail-container .lesson-item:hover {
+    background: #f5f5f5;
 }

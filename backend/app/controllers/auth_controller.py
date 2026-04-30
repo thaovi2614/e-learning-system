@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity, unset_jwt_cookies
-import app.services.auth_service as auth_service
+import app.services.auth_service as AuthService
 
 auth_bp = Blueprint("auth", __name__, url_prefix="/api/auth")
 
@@ -8,13 +8,13 @@ auth_bp = Blueprint("auth", __name__, url_prefix="/api/auth")
 def register():
     data = request.get_json()
 
-    return auth_service.register(data)
+    return AuthService.register(data)
 
 @auth_bp.route("/login", methods=["POST"])
 def login():
     data = request.get_json()
 
-    return auth_service.login(
+    return AuthService.login(
         data.get("username"),
         data.get("password")
     )
@@ -29,4 +29,4 @@ def logout():
 @jwt_required()
 def profile():
     user_id = get_jwt_identity()
-    return auth_service.get_profile(user_id)
+    return AuthService.get_profile(user_id)

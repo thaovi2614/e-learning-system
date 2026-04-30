@@ -46,7 +46,7 @@ def create_app():
     app.register_blueprint(payment_bp)
     app.register_blueprint(lesson_bp)
     app.register_blueprint(chapter_bp)
-    app.register_blueprint(user_bp, url_prefix='/api/user')
+    app.register_blueprint(user_bp)
 
     # Global error handler
     @app.errorhandler(Exception)

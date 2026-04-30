@@ -6,6 +6,7 @@ from app.enums.user_role import UserRole
 from app.enums.course_type import CourseType
 from app.configs.database_config import db
 import app.services.category_service as CategoryService
+import app.services.cloudinary_service as CloudinaryService
 
 def find_course_by_id(id):
     course = Course.query.get(id)
@@ -72,7 +73,7 @@ def find_courses(data, is_admin=False):
         "total_pages": pagination.pages
     }
 
-def add_course(data, user_id):
+def add_course(data, file, user_id):
     instructor = User.query.get(user_id)
     if not instructor:
         raise Exception("Người dùng không tồn tại")
@@ -89,7 +90,10 @@ def add_course(data, user_id):
     type_str = data.get("type")
     price = data.get("price")
     description = data.get("description")
-    thumbnail = data.get("thumbnail")
+
+    thumbnail_url = None
+    if file:
+        thumbnail_url = CloudinaryService.upload_thumbnail(file, user_id)
 
     if not name:
         raise Exception("Tên khóa học không được để trống")
@@ -122,7 +126,7 @@ def add_course(data, user_id):
         type = course_type,
         price = price,
         description = description,
-        thumbnail = thumbnail,
+        thumbnail = thumbnail_url,
         instructor_id = instructor.id,
         category_id = category.id
     )
@@ -178,7 +182,7 @@ def add_course(data, user_id):
 #     db.session.commit()
 
 #     return course
-def update_course(data, user_id, course_id):
+def update_course(data, file, user_id, course_id):
     course = Course.query.get(course_id)
 
     if not course:
@@ -227,8 +231,12 @@ def update_course(data, user_id, course_id):
         course.description = data.get("description")
 
     # thumbnail
-    if "thumbnail" in data:
-        course.thumbnail = data.get("thumbnail")
+    # if "thumbnail" in data:
+    #     course.thumbnail = data.get("thumbnail")
+    thumbnail_url = None
+    if file:
+        thumbnail_url = CloudinaryService.upload_thumbnail(file, user_id)
+        course.thumbnail = thumbnail_url
 
     if "active" in data:
         active_value = data.get("active")
@@ -262,12 +270,12 @@ def delete_course(user_id, course_id):
 
     db.session.commit()
 
-
     return course
-def find_my_courses(user_id):
+
+
+def find_instructor_manage_courses(user_id):
     courses = Course.query.filter_by(
-        instructor_id=user_id,
-        active=True
+        instructor_id=user_id
     ).order_by(Course.id.desc()).all()
 
     return courses

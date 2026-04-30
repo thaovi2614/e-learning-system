@@ -10,6 +10,7 @@ export default function DetailCourse() {
     const { user } = useAuth();
     const { addToCart } = useCart();
     const [course, setCourse] = useState(null);
+    const [openChapter, setOpenChapter] = useState(null);
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -20,6 +21,10 @@ export default function DetailCourse() {
     async function fetchCourse() {
         const res = await getCourseById(id);
         setCourse(res.data);
+    }
+
+    function toggleChapter(id) {
+        setOpenChapter(prev => (prev === id ? null : id));
     }
 
     function handleAddToCart() {
@@ -38,6 +43,19 @@ export default function DetailCourse() {
             style: "currency",
             currency: "VND",
         }).format(price);
+    }
+
+    function getLessonIcon(type) {
+        switch (type) {
+            case "VIDEO":
+                return "🎥";
+            case "SLIDE":
+                return "📄";
+            case "QUIZ":
+                return "📝";
+            default:
+                return "📚";
+        }
     }
 
     if (!course) return <div>Loading...</div>;
@@ -64,10 +82,35 @@ export default function DetailCourse() {
                     <div className="section">
                         <h3>Nội dung khóa học</h3>
 
-                        {/* fake chapter */}
-                        <select><option>Chương 1</option></select>
-                        <select><option>Chương 2</option></select>
-                        <select><option>Chương 3</option></select>
+                        <div className="chapter-list">
+                            {course.chapters.map(chapter => (
+                                <div key={chapter.id} className="chapter-item">
+
+                                    {/* HEADER */}
+                                    <div
+                                        className="chapter-header"
+                                        onClick={() => toggleChapter(chapter.id)}
+                                    >
+                                        <span>{chapter.title}</span>
+                                        <span>{openChapter === chapter.id ? "▲" : "▼"}</span>
+                                    </div>
+
+                                    {/* LESSON LIST */}
+                                    {openChapter === chapter.id && (
+                                        <div className="lesson-list">
+                                            {chapter.lessons?.map(lesson => (
+                                                <div key={lesson.id} className="lesson-item">
+                                                    <span>
+                                                        {getLessonIcon(lesson.type)}
+                                                    </span>
+                                                    {lesson.title}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
                     </div>
 
                     <div className="section">

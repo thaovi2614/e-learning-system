@@ -47,8 +47,10 @@ class Lesson(db.Model):
 
     __mapper_args__ = {
         "polymorphic_on": type,
-        "polymorphic_identity": LessonType.QUIZ,
+        # "polymorphic_identity": LessonType.QUIZ,
+        "polymorphic_identity": "lesson"
     }
+
     def to_dict(self):
         data = {
             "id": self.id,

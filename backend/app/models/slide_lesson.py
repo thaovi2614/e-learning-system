@@ -11,6 +11,7 @@ class SlideLesson(Lesson):
     __mapper_args__ = {
         "polymorphic_identity": LessonType.SLIDE
     }
+    
     def to_dict(self):
         data = super().to_dict()
         data["slideFile"] = self.slideFile

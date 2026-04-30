@@ -5,20 +5,20 @@
 }
 
 /* TITLE */
-.title {
+.my-courses-container .title {
     font-size: 26px;
     font-weight: 600;
     margin-bottom: 20px;
 }
 
 /* EMPTY */
-.empty {
+.my-courses-container .empty {
     color: #777;
     margin-top: 20px;
 }
 
 /* GRID */
-.course-grid {
+.my-courses-container .course-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 24px;
@@ -26,13 +26,13 @@
 
 /* Mobile */
 @media (max-width: 768px) {
-    .course-grid {
+    .my-courses-container .course-grid {
         grid-template-columns: 1fr;
     }
 }
 
 /* CARD */
-.course-card {
+.my-courses-container .course-card {
     background: white;
     border-radius: 14px;
     overflow: hidden;
@@ -41,36 +41,34 @@
     border: 1px solid #eee;
 }
 
-.course-card:hover {
+.my-courses-container .course-card:hover {
     transform: translateY(-6px);
     box-shadow: 0 10px 25px rgba(0,0,0,0.12);
 }
 
 /* THUMBNAIL */
-.thumbnail {
+.my-courses-container .thumbnail {
     position: relative;
     width: 180px;
     height: 180px;
     overflow: hidden;
-    flex-shrink: 0;
     border-radius: 8px;
-    overflow: hidden;
     border: 1px solid #777;
 }
 
-.thumbnail img {
+.my-courses-container .thumbnail img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     transition: 0.3s;
 }
 
-.course-card:hover img {
+.my-courses-container .course-card:hover img {
     transform: scale(1.05);
 }
 
 /* OVERLAY */
-.overlay {
+.my-courses-container .overlay {
     position: absolute;
     inset: 0;
     background: rgba(0,0,0,0.4);
@@ -81,7 +79,7 @@
     transition: 0.3s;
 }
 
-.overlay span {
+.my-courses-container .overlay span {
     color: white;
     font-weight: 500;
     background: rgba(0,0,0,0.6);
@@ -89,31 +87,31 @@
     border-radius: 6px;
 }
 
-.course-card:hover .overlay {
+.my-courses-container .course-card:hover .overlay {
     opacity: 1;
 }
 
 /* BODY */
-.card-body {
+.my-courses-container .card-body {
     padding: 14px;
 }
 
-.card-body h3 {
-    font-size: 24px;
+.my-courses-container .card-body h3 {
+    font-size: 18px;
     font-weight: bold;
     margin-bottom: 6px;
     line-height: 1.4;
 }
 
-.card-body p {
-    font-size: 16px;
+.my-courses-container .card-body p {
+    font-size: 14px;
     color: #777;
     height: 36px;
     overflow: hidden;
 }
 
 /* FOOTER */
-.card-footer {
+.my-courses-container .card-footer {
     margin-top: 10px;
     display: flex;
     justify-content: space-between;
@@ -121,7 +119,7 @@
 }
 
 /* BADGE */
-.badge {
+.my-courses-container .badge {
     font-size: 12px;
     background: #e6f7ed;
     color: #2e7d32;

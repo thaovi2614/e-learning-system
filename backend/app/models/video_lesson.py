@@ -9,9 +9,9 @@ class VideoLesson(Lesson):
     videoUrl = db.Column(db.String(255), nullable=False)
 
     __mapper_args__ = {
-        #"polymorphic_identity": "video"
         "polymorphic_identity": LessonType.VIDEO
     }
+    
     def to_dict(self):
         data = super().to_dict()
         data["videoUrl"] = self.videoUrl

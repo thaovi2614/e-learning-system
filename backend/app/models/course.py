@@ -37,5 +37,6 @@ class Course(db.Model):
             "thumbnail": self.thumbnail,
             "active": self.active,
             "instructor_id": self.instructor_id,
-            "category_id": self.category_id
+            "category_id": self.category_id,
+            "chapters": [c.to_dict() for c in self.chapters if c.active]
         }

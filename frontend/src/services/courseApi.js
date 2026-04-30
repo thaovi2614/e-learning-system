@@ -8,16 +8,28 @@ export const getMyCourses = (params) => {
     return api.get("/courses/my-courses", { params });
 };
 
+export const getCoursesManage = () => {
+    return api.get("/courses/manage");
+};
+
 export const getCourseById = (id) => {
     return api.get(`/courses/${id}`);
 };
 
 export const createCourse = (data) => {
-    return api.post("/courses", data);
+    return api.post("/courses", data, {
+        headers: {
+        "Content-Type": "multipart/form-data",
+        },
+    });
 };
 
 export const updateCourse = (id, data) => {
-    return api.put(`/courses/${id}`, data);
+    return api.put(`/courses/${id}`, data, {
+        headers: {
+        "Content-Type": "multipart/form-data",
+        },
+    });
 };
 
 export const deleteCourse = (id) => {

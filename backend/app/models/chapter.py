@@ -25,5 +25,6 @@ class Chapter(db.Model):
             "title": self.title,
             "order_index": self.order_index,
             "active": self.active,
-            "course_id": self.course_id
+            "course_id": self.course_id,
+            "lessons": [l.to_dict() for l in self.lessons if l.active]
         }

@@ -48,14 +48,13 @@ def update_chapter(chapter_id):
         return jsonify({"message": str(e)}), 400
 
 
-@chapter_bp.route("/chapters/<int:chapter_id>", methods=["DELETE"])
+@chapter_bp.route("/courses/<int:course_id>/chapters/<int:chapter_id>", methods=["DELETE"])
 @role_required("INSTRUCTOR")
-def delete_chapter(chapter_id):
+def delete_chapter(course_id, chapter_id):
     try:
-        user_id = int(get_jwt_identity()
+        user_id = int(get_jwt_identity())
 
-        )
-        ChapterService.delete_chapter(user_id, chapter_id)
+        ChapterService.delete_chapter(user_id, course_id, chapter_id)
 
         return jsonify({"message": "Đã xóa chương"}), 200
 

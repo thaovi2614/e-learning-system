@@ -10,6 +10,7 @@ import DetailCourse from "../pages/detailCourse/DetailCourse";
 import Cart from "../pages/cart/Cart";
 import MyCourses from "../pages/myCourses/MyCourses";
 import LearnCourse from "../pages/learnCourse/LearnCourse";
+import LessonViewer from "../pages/learnCourse/LessonViewer"
 
 import CourseManagePage from "../pages/courseManage/CourseManagePage";
 import CourseContentPage from "../pages/courseManage/CourseContentPage";
@@ -90,7 +91,9 @@ export default function AppRoutes() {
                 <LearnCourse />
               </PrivateRoute>
             }
-          />
+          >
+            <Route path="lesson/:lessonId" element={<LessonViewer />} />
+          </Route>
 
           <Route
             path="/cart"

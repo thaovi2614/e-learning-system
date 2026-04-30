@@ -1,9 +1,8 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import api from "../../services/api";
-
-const API_BASE_URL = "http://localhost:5000";
+import { getCourseById } from "../../services/courseApi";
+import { createChapter, removeChapter } from "../../services/chapterApi"
+import { createLesson, updateLesson, deleteLesson as deleteLessonApi } from "../../services/lessonApi";
 
 export default function CourseContentPage() {
   const { courseId } = useParams();
@@ -19,16 +18,12 @@ export default function CourseContentPage() {
 
   const [chapterForm, setChapterForm] = useState({
     title: "",
-    order_index: "",
   });
 
   const [lessonForm, setLessonForm] = useState({
     title: "",
     type: "SLIDE",
-    order_index: "",
-    videoUrl: "",
-    slideFile: "",
-    quizFile: "",
+    url: "",
     file: null,
   });
 
@@ -37,41 +32,27 @@ export default function CourseContentPage() {
 
   const loadCourse = async () => {
     try {
-      const res = await api.get(`/courses/${courseId}`);
-      setCourse(res.data);
+      const res = await getCourseById(courseId);
+      const data = res.data;
+
+      setCourse(data);
+
+      const chapters = data.chapters || [];
+      setChapters(chapters);
+
+      if (chapters.length > 0) {
+        setSelectedChapter(chapters[0]);
+        setLessons(chapters[0].lessons || []);
+      }
+
     } catch (error) {
       alert("Không tải được khóa học");
-    }
-  };
-
-  const loadChapters = async () => {
-    try {
-      const res = await api.get(`/courses/${courseId}/chapters`);
-      const data = Array.isArray(res.data) ? res.data : [];
-      setChapters(data);
-
-      if (data.length > 0) {
-        setSelectedChapter(data[0]);
-        loadLessons(data[0].id);
-      }
-    } catch (error) {
-      alert("Không tải được chương");
-    }
-  };
-
-  const loadLessons = async (chapterId) => {
-    try {
-      const res = await api.get(`/chapters/${chapterId}/lessons`);
-      setLessons(Array.isArray(res.data) ? res.data : []);
-    } catch (error) {
-      alert("Không tải được nội dung bài học");
     }
   };
 
   useEffect(() => {
     if (courseId) {
       loadCourse();
-      loadChapters();
     }
   }, [courseId]);
 
@@ -80,7 +61,7 @@ export default function CourseContentPage() {
     setSelectedLessonId(null);
     setShowLessonForm(false);
     setEditingLessonId(null);
-    loadLessons(chapter.id);
+    setLessons(chapter.lessons || []);
   };
 
   const addChapter = async () => {
@@ -90,15 +71,19 @@ export default function CourseContentPage() {
         return;
       }
 
-      await api.post(`/courses/${courseId}/chapters`, {
-        title: chapterForm.title,
-        order_index: Number(chapterForm.order_index || 1),
+      const res = await createChapter(courseId, chapterForm);
+      const newChapter = res.data.data;
+
+      setChapters(prev => {
+        const updated = [...prev, newChapter];
+        return updated.sort((a, b) => a.order_index - b.order_index);
       });
 
       alert("Thêm chương thành công");
-      setChapterForm({ title: "", order_index: "" });
+
+      setChapterForm({ title: "" });
       setShowChapterForm(false);
-      loadChapters();
+
     } catch (error) {
       alert(error.response?.data?.message || "Không thêm được chương");
     }
@@ -108,11 +93,29 @@ export default function CourseContentPage() {
     if (!window.confirm("Xác nhận xoá chương này?")) return;
 
     try {
-      await api.delete(`/chapters/${id}`);
-      setSelectedChapter(null);
-      setSelectedLessonId(null);
-      setLessons([]);
-      loadChapters();
+      await removeChapter(courseId, id);
+
+      setChapters(prev => {
+        const deleted = prev.find(c => c.id === id);
+        if (!deleted) return prev;
+
+        return prev
+          .filter(c => c.id !== id)
+          .map(c =>
+            c.order_index > deleted.order_index
+              ? { ...c, order_index: c.order_index - 1 }
+              : c
+          )
+          .sort((a, b) => a.order_index - b.order_index);
+      });
+
+      if (selectedChapter?.id === id) {
+        setSelectedChapter(null);
+        setLessons([]);
+      }
+
+      alert("Đã xoá chương");
+
     } catch (error) {
       alert(error.response?.data?.message || "Xóa chương thất bại");
     }
@@ -122,10 +125,7 @@ export default function CourseContentPage() {
     setLessonForm({
       title: "",
       type: activeTab,
-      order_index: "",
-      videoUrl: "",
-      slideFile: "",
-      quizFile: "",
+      url: "",
       file: null,
     });
     setEditingLessonId(null);
@@ -136,10 +136,7 @@ export default function CourseContentPage() {
     setLessonForm({
       title: "",
       type: activeTab,
-      order_index: "",
-      videoUrl: "",
-      slideFile: "",
-      quizFile: "",
+      url: "",
       file: null,
     });
     setEditingLessonId(null);
@@ -161,34 +158,38 @@ export default function CourseContentPage() {
       const formData = new FormData();
       formData.append("title", lessonForm.title);
       formData.append("type", activeTab);
-      formData.append("order_index", lessonForm.order_index || 1);
-
-      if (activeTab === "VIDEO") {
-        formData.append("videoUrl", lessonForm.videoUrl || "");
-      }
-
-      if (activeTab === "SLIDE") {
-        formData.append("slideFile", lessonForm.slideFile || "");
-      }
-
-      if (activeTab === "QUIZ") {
-        formData.append("quizFile", lessonForm.quizFile || "");
-      }
 
       if (lessonForm.file) {
         formData.append("file", lessonForm.file);
       }
 
       if (editingLessonId) {
-        await api.put(`/lessons/${editingLessonId}`, formData);
+        const res = await updateLesson(editingLessonId, formData);
+        const updatedLesson = res.data.data;
+
+        setLessons(prev => {
+          const updated = prev.map(l =>
+            l.id === editingLessonId ? updatedLesson : l
+          );
+
+          return updated.sort((a, b) => a.order_index - b.order_index);
+        });
+
         alert("Cập nhật nội dung thành công");
       } else {
-        await api.post(`/chapters/${selectedChapter.id}/lessons`, formData);
+        const res = await createLesson(selectedChapter.id, formData);
+        const newLesson = res.data.data;
+
+        setLessons(prev => {
+          const updated = [...prev, newLesson];
+          return updated.sort((a, b) => a.order_index - b.order_index);
+        });
+
         alert("Thêm nội dung thành công");
       }
 
       resetLessonForm();
-      loadLessons(selectedChapter.id);
+
     } catch (error) {
       alert(error.response?.data?.message || "Có lỗi xảy ra");
     }
@@ -198,9 +199,28 @@ export default function CourseContentPage() {
     if (!window.confirm("Xác nhận xoá nội dung này?")) return;
 
     try {
-      await api.delete(`/lessons/${id}`);
+      await deleteLessonApi(id);
+
+      setLessons(prev => {
+        const deleted = prev.find(l => l.id === id);
+        if (!deleted) return prev;
+
+        const updated = prev
+          .filter(l => l.id !== id)
+          .map(l => {
+            if (l.order_index > deleted.order_index) {
+              return { ...l, order_index: l.order_index - 1 };
+            }
+            return l;
+          });
+
+        return updated.sort((a, b) => a.order_index - b.order_index);
+      });
+
       setSelectedLessonId(null);
-      loadLessons(selectedChapter.id);
+
+      alert("Đã xoá nội dung");
+
     } catch (error) {
       alert(error.response?.data?.message || "Xóa nội dung thất bại");
     }
@@ -213,10 +233,6 @@ export default function CourseContentPage() {
     setLessonForm({
       title: lesson.title || "",
       type: lesson.type || activeTab,
-      order_index: lesson.order_index || "",
-      videoUrl: lesson.videoUrl || "",
-      slideFile: lesson.slideFile || "",
-      quizFile: lesson.quizFile || "",
       file: null,
     });
   };
@@ -232,11 +248,7 @@ export default function CourseContentPage() {
     const source = getLessonSource(lesson);
     if (!source) return "";
 
-    if (source.startsWith("http://") || source.startsWith("https://")) {
-      return source;
-    }
-
-    return `${API_BASE_URL}/${source}`;
+    return source;
   };
 
   const openLesson = (lesson) => {
@@ -290,10 +302,7 @@ export default function CourseContentPage() {
     setLessonForm({
       title: "",
       type: tab,
-      order_index: "",
-      videoUrl: "",
-      slideFile: "",
-      quizFile: "",
+      url: "",
       file: null,
     });
   };
@@ -348,26 +357,13 @@ export default function CourseContentPage() {
                   }
                 />
 
-                <input
-                  style={input}
-                  type="number"
-                  placeholder="Thứ tự"
-                  value={chapterForm.order_index}
-                  onChange={(e) =>
-                    setChapterForm({
-                      ...chapterForm,
-                      order_index: e.target.value,
-                    })
-                  }
-                />
-
                 <button style={smallPrimaryBtn} onClick={addChapter}>
                   Lưu
                 </button>
 
                 <button
                   style={smallLightBtn}
-                  onClick={() => setShowChapterForm(false)}
+                  onClick={() => {setShowChapterForm(false); setChapterForm({ title: "" });}}
                 >
                   Hủy
                 </button>
@@ -462,61 +458,6 @@ export default function CourseContentPage() {
 
                 <input
                   style={input}
-                  type="number"
-                  placeholder="Thứ tự"
-                  value={lessonForm.order_index}
-                  onChange={(e) =>
-                    setLessonForm({
-                      ...lessonForm,
-                      order_index: e.target.value,
-                    })
-                  }
-                />
-
-                {activeTab === "VIDEO" && (
-                  <input
-                    style={input}
-                    placeholder="Link video hoặc upload file"
-                    value={lessonForm.videoUrl}
-                    onChange={(e) =>
-                      setLessonForm({
-                        ...lessonForm,
-                        videoUrl: e.target.value,
-                      })
-                    }
-                  />
-                )}
-
-                {activeTab === "SLIDE" && (
-                  <input
-                    style={input}
-                    placeholder="Link slide hoặc upload file"
-                    value={lessonForm.slideFile}
-                    onChange={(e) =>
-                      setLessonForm({
-                        ...lessonForm,
-                        slideFile: e.target.value,
-                      })
-                    }
-                  />
-                )}
-
-                {activeTab === "QUIZ" && (
-                  <input
-                    style={input}
-                    placeholder="Link bài tập hoặc upload file"
-                    value={lessonForm.quizFile}
-                    onChange={(e) =>
-                      setLessonForm({
-                        ...lessonForm,
-                        quizFile: e.target.value,
-                      })
-                    }
-                  />
-                )}
-
-                <input
-                  style={input}
                   type="file"
                   accept={
                     activeTab === "VIDEO"
@@ -548,7 +489,6 @@ export default function CourseContentPage() {
                     <th style={th}>#</th>
                     <th style={th}>Tên nội dung</th>
                     <th style={th}>Loại</th>
-                    <th style={th}>Nguồn</th>
                     <th style={th}>Thứ tự</th>
                     <th style={th}>Thao tác</th>
                   </tr>
@@ -588,19 +528,6 @@ export default function CourseContentPage() {
 
                       <td style={td}>
                         <span style={badge}>{getFileType(lesson)}</span>
-                      </td>
-
-                      <td style={td}>
-                        {getLessonSource(lesson) ? (
-                          <span
-                            style={fileLinkText}
-                            onClick={() => openLesson(lesson)}
-                          >
-                            {getSourceLabel(lesson)}
-                          </span>
-                        ) : (
-                          "Không có"
-                        )}
                       </td>
 
                       <td style={td}>{lesson.order_index}</td>
@@ -739,7 +666,10 @@ const tabs = {
 };
 
 const tabBtn = {
-  border: "none",
+  borderTop: "none",
+  borderLeft: "none",
+  borderRight: "none",
+  borderBottom: "3px solid transparent",
   background: "transparent",
   padding: "12px 0",
   cursor: "pointer",
