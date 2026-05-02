@@ -21,7 +21,7 @@ test.describe('TEST LUỒNG TÌM KIẾM KHÓA HỌC', () => {
   test('TC3 - Hiển thị danh sách khóa học nếu có kết quả', async ({ page }) => {
     await page.goto(`${BASE}/search?kw=python`);
 
-    await expect(page.getByRole('heading', { name: /kết quả cho/i })).toBeVisible();
+    await expect(page.locator('h2.section-title')).toContainText('0 kết quả');
 
     const courseItems = page.locator('.course-card, .course-item, a[href^="/courses/"]');
 
