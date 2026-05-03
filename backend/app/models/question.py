@@ -8,3 +8,4 @@ class Question(db.Model):
     student_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     course_id = db.Column(db.Integer, db.ForeignKey("courses.id"), nullable=False)
     sentAt = db.Column(db.DateTime)
+    file_url = db.Column(db.String(500))

@@ -13,7 +13,7 @@ ACCESS_KEY = "F8BBA842ECF85"
 SECRET_KEY = "K951B6PE1waDMi640xX08PD3vg6EkVlz"
 
 REDIRECT_URL = "http://localhost:5173/cart"
-IPN_URL = "https://fondly-husked-tubular.ngrok-free.dev/api/payments/momo/ipn"
+IPN_URL = "https://doomfully-unaustere-natalie.ngrok-free.dev/api/payments/momo/ipn"
 
 
 # ================== CREATE PAYMENT ==================

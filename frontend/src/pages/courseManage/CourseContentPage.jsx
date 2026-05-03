@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { getCourseById } from "../../services/courseApi";
 import { createChapter, removeChapter } from "../../services/chapterApi"
 import { createLesson, updateLesson, deleteLesson as deleteLessonApi } from "../../services/lessonApi";
+import ForumTab from "../learnCourse/ForumTab"
 
 export default function CourseContentPage() {
   const { courseId } = useParams();
@@ -15,6 +16,9 @@ export default function CourseContentPage() {
   const [activeTab, setActiveTab] = useState("SLIDE");
   const [selectedLessonId, setSelectedLessonId] = useState(null);
   const [editingLessonId, setEditingLessonId] = useState(null);
+
+  // Thêm state để quản lý tab chính (Nội dung vs Diễn đàn)
+  const [mainTab, setMainTab] = useState("CONTENT"); 
 
   const [chapterForm, setChapterForm] = useState({
     title: "",
@@ -281,18 +285,6 @@ export default function CourseContentPage() {
     return ext || lesson.type;
   };
 
-  const getSourceLabel = (lesson) => {
-    const source = getLessonSource(lesson);
-
-    if (!source) return "Không có";
-
-    if (source.startsWith("http://") || source.startsWith("https://")) {
-      return "Link ngoài";
-    }
-
-    return `File ${getFileType(lesson)}`;
-  };
-
   const changeTab = (tab) => {
     setActiveTab(tab);
     setSelectedLessonId(null);
@@ -313,7 +305,7 @@ export default function CourseContentPage() {
     <div style={page}>
       <div style={container}>
         <div style={topBar}>
-          <h1 style={title}>Quản lý nội dung bài học</h1>
+          <h1 style={title}>Quản lý khóa học</h1>
 
           <button style={lightBtn} onClick={() => navigate("/manage-course")}>
             ← Quay lại khóa học
@@ -333,501 +325,210 @@ export default function CourseContentPage() {
           </div>
         </div>
 
-        <div style={layout}>
-          <div style={leftPanel}>
-            <div style={panelHead}>
-              <h3>Danh sách chương</h3>
+        {/* Thanh Tab chính để chuyển đổi giữa Bài học và Diễn đàn[cite: 9] */}
+        <div style={mainTabsContainer}>
+            <button 
+                style={mainTab === "CONTENT" ? activeMainTabBtn : mainTabBtn} 
+                onClick={() => setMainTab("CONTENT")}
+            >
+                Nội dung bài học
+            </button>
+            <button 
+                style={mainTab === "FORUM" ? activeMainTabBtn : mainTabBtn} 
+                onClick={() => setMainTab("FORUM")}
+            >
+                Diễn đàn thảo luận
+            </button>
+        </div>
 
-              <button
-                style={smallPrimaryBtn}
-                onClick={() => setShowChapterForm(true)}
-              >
-                + Thêm chương
-              </button>
-            </div>
+        <div style={{ marginTop: '20px' }}>
+            {mainTab === "FORUM" ? (
+                <div style={forumWrapper}>
+                    <ForumTab courseId={courseId} /> {/* Render ForumTab y nguyên logic cũ[cite: 11] */}
+                </div>
+            ) : (
+                <div style={layout}>
+                    <div style={leftPanel}>
+                        <div style={panelHead}>
+                            <h3>Danh sách chương</h3>
+                            <button
+                                style={smallPrimaryBtn}
+                                onClick={() => setShowChapterForm(true)}
+                            >
+                                + Thêm chương
+                            </button>
+                        </div>
 
-            {showChapterForm && (
-              <div style={miniForm}>
-                <input
-                  style={input}
-                  placeholder="Tên chương"
-                  value={chapterForm.title}
-                  onChange={(e) =>
-                    setChapterForm({ ...chapterForm, title: e.target.value })
-                  }
-                />
+                        {showChapterForm && (
+                            <div style={miniForm}>
+                                <input
+                                style={input}
+                                placeholder="Tên chương"
+                                value={chapterForm.title}
+                                onChange={(e) =>
+                                    setChapterForm({ ...chapterForm, title: e.target.value })
+                                }
+                                />
+                                <button style={smallPrimaryBtn} onClick={addChapter}>Lưu</button>
+                                <button
+                                style={smallLightBtn}
+                                onClick={() => {setShowChapterForm(false); setChapterForm({ title: "" });}}
+                                >
+                                Hủy
+                                </button>
+                            </div>
+                        )}
 
-                <button style={smallPrimaryBtn} onClick={addChapter}>
-                  Lưu
-                </button>
+                        {chapters.length === 0 && (
+                            <p style={emptyText}>Chưa có chương nào.</p>
+                        )}
 
-                <button
-                  style={smallLightBtn}
-                  onClick={() => {setShowChapterForm(false); setChapterForm({ title: "" });}}
-                >
-                  Hủy
-                </button>
-              </div>
+                        {chapters.map((chapter) => (
+                            <div
+                                key={chapter.id}
+                                style={selectedChapter?.id === chapter.id ? activeChapterItem : chapterItem}
+                                onClick={() => chooseChapter(chapter)}
+                            >
+                                <span>Chương {chapter.order_index}: {chapter.title}</span>
+                                <button
+                                style={iconDeleteBtn}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    deleteChapter(chapter.id);
+                                }}
+                                >
+                                🗑
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div style={rightPanel}>
+                        <div style={panelHead}>
+                            <h3>
+                                Nội dung: {selectedChapter ? `Chương ${selectedChapter.order_index} - ${selectedChapter.title}` : "Chưa chọn chương"}
+                            </h3>
+                        </div>
+
+                        <div style={tabs}>
+                            <button style={activeTab === "SLIDE" ? activeTabBtn : tabBtn} onClick={() => changeTab("SLIDE")}>Slide</button>
+                            <button style={activeTab === "VIDEO" ? activeTabBtn : tabBtn} onClick={() => changeTab("VIDEO")}>Video</button>
+                            <button style={activeTab === "QUIZ" ? activeTabBtn : tabBtn} onClick={() => changeTab("QUIZ")}>Bài tập</button>
+                        </div>
+
+                        <div style={lessonActions}>
+                            <button style={smallPrimaryBtn} onClick={openCreateLessonForm}>
+                                + Thêm {activeTab === "SLIDE" ? "slide" : activeTab === "VIDEO" ? "video" : "bài tập"}
+                            </button>
+                        </div>
+
+                        {showLessonForm && (
+                            <div style={lessonFormBox}>
+                                <input
+                                    style={input}
+                                    placeholder="Tên nội dung"
+                                    value={lessonForm.title}
+                                    onChange={(e) => setLessonForm({ ...lessonForm, title: e.target.value })}
+                                />
+                                <input
+                                    style={input}
+                                    type="file"
+                                    accept={activeTab === "VIDEO" ? "video/*" : ".pdf,.ppt,.pptx,.doc,.docx,.txt,.png,.jpg,.jpeg"}
+                                    onChange={(e) => setLessonForm({ ...lessonForm, file: e.target.files[0] })}
+                                />
+                                <button style={smallPrimaryBtn} onClick={addLesson}>
+                                    {editingLessonId ? "Cập nhật nội dung" : "Lưu nội dung"}
+                                </button>
+                                <button style={smallLightBtn} onClick={resetLessonForm}>Hủy</button>
+                            </div>
+                        )}
+
+                        <div style={tableWrap}>
+                            <table style={table}>
+                                <thead>
+                                <tr>
+                                    <th style={th}>#</th>
+                                    <th style={th}>Tên nội dung</th>
+                                    <th style={th}>Loại</th>
+                                    <th style={th}>Thứ tự</th>
+                                    <th style={th}>Thao tác</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {filteredLessons.length === 0 && (
+                                    <tr><td style={emptyTd} colSpan="6">Chưa có nội dung nào.</td></tr>
+                                )}
+                                {filteredLessons.map((lesson, index) => (
+                                    <tr key={lesson.id} style={selectedLessonId === lesson.id ? selectedLessonRow : {}}>
+                                    <td style={td}>{index + 1}</td>
+                                    <td style={td}>
+                                        <span
+                                        style={selectedLessonId === lesson.id ? selectedLessonTitle : clickableLessonTitle}
+                                        onClick={() => openLesson(lesson)}
+                                        >
+                                        {lesson.title}
+                                        </span>
+                                    </td>
+                                    <td style={td}><span style={badge}>{getFileType(lesson)}</span></td>
+                                    <td style={td}>{lesson.order_index}</td>
+                                    <td style={td}>
+                                        <button style={editBtn} onClick={() => startEditLesson(lesson)}>Sửa</button>
+                                        <button style={deleteBtn} onClick={() => deleteLesson(lesson.id)}>Xóa</button>
+                                    </td>
+                                    </tr>
+                                ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             )}
-
-            {chapters.length === 0 && (
-              <p style={emptyText}>Chưa có chương nào.</p>
-            )}
-
-            {chapters.map((chapter) => (
-              <div
-                key={chapter.id}
-                style={
-                  selectedChapter?.id === chapter.id
-                    ? activeChapterItem
-                    : chapterItem
-                }
-                onClick={() => chooseChapter(chapter)}
-              >
-                <span>
-                  Chương {chapter.order_index}: {chapter.title}
-                </span>
-
-                <button
-                  style={iconDeleteBtn}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    deleteChapter(chapter.id);
-                  }}
-                >
-                  🗑
-                </button>
-              </div>
-            ))}
-          </div>
-
-          <div style={rightPanel}>
-            <div style={panelHead}>
-              <h3>
-                Nội dung:{" "}
-                {selectedChapter
-                  ? `Chương ${selectedChapter.order_index} - ${selectedChapter.title}`
-                  : "Chưa chọn chương"}
-              </h3>
-            </div>
-
-            <div style={tabs}>
-              <button
-                style={activeTab === "SLIDE" ? activeTabBtn : tabBtn}
-                onClick={() => changeTab("SLIDE")}
-              >
-                Slide
-              </button>
-
-              <button
-                style={activeTab === "VIDEO" ? activeTabBtn : tabBtn}
-                onClick={() => changeTab("VIDEO")}
-              >
-                Video
-              </button>
-
-              <button
-                style={activeTab === "QUIZ" ? activeTabBtn : tabBtn}
-                onClick={() => changeTab("QUIZ")}
-              >
-                Bài tập
-              </button>
-            </div>
-
-            <div style={lessonActions}>
-              <button style={smallPrimaryBtn} onClick={openCreateLessonForm}>
-                + Thêm{" "}
-                {activeTab === "SLIDE"
-                  ? "slide"
-                  : activeTab === "VIDEO"
-                  ? "video"
-                  : "bài tập"}
-              </button>
-            </div>
-
-            {showLessonForm && (
-              <div style={lessonFormBox}>
-                <input
-                  style={input}
-                  placeholder="Tên nội dung"
-                  value={lessonForm.title}
-                  onChange={(e) =>
-                    setLessonForm({ ...lessonForm, title: e.target.value })
-                  }
-                />
-
-                <input
-                  style={input}
-                  type="file"
-                  accept={
-                    activeTab === "VIDEO"
-                      ? "video/*"
-                      : ".pdf,.ppt,.pptx,.doc,.docx,.txt,.png,.jpg,.jpeg"
-                  }
-                  onChange={(e) =>
-                    setLessonForm({
-                      ...lessonForm,
-                      file: e.target.files[0],
-                    })
-                  }
-                />
-
-                <button style={smallPrimaryBtn} onClick={addLesson}>
-                  {editingLessonId ? "Cập nhật nội dung" : "Lưu nội dung"}
-                </button>
-
-                <button style={smallLightBtn} onClick={resetLessonForm}>
-                  Hủy
-                </button>
-              </div>
-            )}
-
-            <div style={tableWrap}>
-              <table style={table}>
-                <thead>
-                  <tr>
-                    <th style={th}>#</th>
-                    <th style={th}>Tên nội dung</th>
-                    <th style={th}>Loại</th>
-                    <th style={th}>Thứ tự</th>
-                    <th style={th}>Thao tác</th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  {filteredLessons.length === 0 && (
-                    <tr>
-                      <td style={emptyTd} colSpan="6">
-                        Chưa có nội dung nào.
-                      </td>
-                    </tr>
-                  )}
-
-                  {filteredLessons.map((lesson, index) => (
-                    <tr
-                      key={lesson.id}
-                      style={
-                        selectedLessonId === lesson.id ? selectedLessonRow : {}
-                      }
-                    >
-                      <td style={td}>{index + 1}</td>
-
-                      <td style={td}>
-                        <span
-                          style={
-                            selectedLessonId === lesson.id
-                              ? selectedLessonTitle
-                              : clickableLessonTitle
-                          }
-                          onClick={() => openLesson(lesson)}
-                          title="Bấm để mở nội dung"
-                        >
-                          {lesson.title}
-                        </span>
-                      </td>
-
-                      <td style={td}>
-                        <span style={badge}>{getFileType(lesson)}</span>
-                      </td>
-
-                      <td style={td}>{lesson.order_index}</td>
-
-                      <td style={td}>
-                        <button
-                          style={editBtn}
-                          onClick={() => startEditLesson(lesson)}
-                        >
-                          Sửa
-                        </button>
-
-                        <button
-                          style={deleteBtn}
-                          onClick={() => deleteLesson(lesson.id)}
-                        >
-                          Xóa
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
         </div>
       </div>
     </div>
   );
 }
 
-const page = {
-  background: "#f6f8fc",
-  minHeight: "100vh",
-  padding: "28px 0",
-  fontFamily: "Arial, sans-serif",
-};
+const page = { background: "#f6f8fc", minHeight: "100vh", padding: "28px 0", fontFamily: "Arial, sans-serif" };
+const container = { width: "1180px", maxWidth: "92%", margin: "0 auto" };
+const topBar = { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 };
+const title = { margin: 0, color: "#0f172a", fontSize: 30 };
+const subTitle = { margin: "6px 0 0", color: "#64748b" };
+const courseCard = { background: "#fff", borderRadius: 16, padding: 18, display: "flex", alignItems: "center", gap: 14, marginBottom: 18, boxShadow: "0 8px 24px rgba(0,0,0,0.05)" };
+const courseImg = { width: 58, height: 58, borderRadius: 12, objectFit: "cover" };
+const courseName = { margin: 0, fontSize: 20 };
+const layout = { display: "grid", gridTemplateColumns: "340px 1fr", gap: 18 };
+const leftPanel = { background: "#fff", borderRadius: 16, padding: 18, boxShadow: "0 8px 24px rgba(0,0,0,0.05)" };
+const rightPanel = { background: "#fff", borderRadius: 16, padding: 18, boxShadow: "0 8px 24px rgba(0,0,0,0.05)" };
+const panelHead = { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 };
+const chapterItem = { padding: "14px 12px", border: "1px solid #e2e8f0", borderRadius: 10, marginBottom: 10, cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" };
+const activeChapterItem = { ...chapterItem, border: "1px solid #2563eb", background: "#eff6ff", color: "#1d4ed8" };
+const tabs = { display: "flex", gap: 22, borderBottom: "1px solid #e2e8f0", marginBottom: 14 };
+const tabBtn = { borderTop: "none", borderLeft: "none", borderRight: "none", borderBottom: "3px solid transparent", background: "transparent", padding: "12px 0", cursor: "pointer", color: "#475569", fontWeight: 700 };
+const activeTabBtn = { ...tabBtn, color: "#2563eb", borderBottom: "3px solid #2563eb" };
+const lessonActions = { marginBottom: 14 };
+const tableWrap = { border: "1px solid #edf2f7", borderRadius: 14, overflow: "hidden" };
+const table = { width: "100%", borderCollapse: "collapse" };
+const th = { background: "#f8fafc", padding: 14, textAlign: "left", color: "#475569", fontSize: 13 };
+const td = { padding: 14, borderTop: "1px solid #edf2f7" };
+const emptyTd = { padding: 28, textAlign: "center", color: "#64748b" };
+const emptyText = { color: "#64748b" };
+const badge = { background: "#dbeafe", color: "#2563eb", padding: "6px 10px", borderRadius: 999, fontSize: 12, fontWeight: 700 };
+const input = { width: "100%", boxSizing: "border-box", padding: "11px 12px", marginBottom: 10, borderRadius: 10, border: "1px solid #dbe1ea" };
+const miniForm = { border: "1px dashed #cbd5e1", padding: 12, borderRadius: 12, marginBottom: 12 };
+const lessonFormBox = { border: "1px dashed #cbd5e1", padding: 14, borderRadius: 12, marginBottom: 14 };
+const smallPrimaryBtn = { background: "#2563eb", color: "#fff", border: "none", borderRadius: 8, padding: "8px 12px", cursor: "pointer", fontWeight: 700, marginRight: 8 };
+const smallLightBtn = { background: "#f1f5f9", color: "#334155", border: "1px solid #dbe1ea", borderRadius: 8, padding: "8px 12px", cursor: "pointer" };
+const lightBtn = { background: "#fff", color: "#2563eb", border: "1px solid #bfdbfe", borderRadius: 10, padding: "10px 14px", cursor: "pointer", fontWeight: 700 };
+const iconDeleteBtn = { border: "none", background: "transparent", cursor: "pointer" };
+const editBtn = { background: "#eff6ff", color: "#2563eb", border: "1px solid #bfdbfe", borderRadius: 8, padding: "8px 12px", cursor: "pointer", marginRight: 8 };
+const deleteBtn = { background: "#fff1f2", color: "#e11d48", border: "1px solid #fecdd3", borderRadius: 8, padding: "8px 12px", cursor: "pointer" };
+const clickableLessonTitle = { color: "#0f172a", cursor: "pointer", fontWeight: 700 };
+const selectedLessonTitle = { color: "#2563eb", cursor: "pointer", fontWeight: 800, textDecoration: "underline" };
+const selectedLessonRow = { background: "#eff6ff" };
 
-const container = {
-  width: "1180px",
-  maxWidth: "92%",
-  margin: "0 auto",
-};
-
-const topBar = {
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  marginBottom: 18,
-};
-
-const title = {
-  margin: 0,
-  color: "#0f172a",
-  fontSize: 30,
-};
-
-const subTitle = {
-  margin: "6px 0 0",
-  color: "#64748b",
-};
-
-const courseCard = {
-  background: "#fff",
-  borderRadius: 16,
-  padding: 18,
-  display: "flex",
-  alignItems: "center",
-  gap: 14,
-  marginBottom: 18,
-  boxShadow: "0 8px 24px rgba(0,0,0,0.05)",
-};
-
-const courseImg = {
-  width: 58,
-  height: 58,
-  borderRadius: 12,
-  objectFit: "cover",
-};
-
-const courseName = {
-  margin: 0,
-  fontSize: 20,
-};
-
-const layout = {
-  display: "grid",
-  gridTemplateColumns: "340px 1fr",
-  gap: 18,
-};
-
-const leftPanel = {
-  background: "#fff",
-  borderRadius: 16,
-  padding: 18,
-  boxShadow: "0 8px 24px rgba(0,0,0,0.05)",
-};
-
-const rightPanel = {
-  background: "#fff",
-  borderRadius: 16,
-  padding: 18,
-  boxShadow: "0 8px 24px rgba(0,0,0,0.05)",
-};
-
-const panelHead = {
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  marginBottom: 14,
-};
-
-const chapterItem = {
-  padding: "14px 12px",
-  border: "1px solid #e2e8f0",
-  borderRadius: 10,
-  marginBottom: 10,
-  cursor: "pointer",
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-};
-
-const activeChapterItem = {
-  ...chapterItem,
-  border: "1px solid #2563eb",
-  background: "#eff6ff",
-  color: "#1d4ed8",
-};
-
-const tabs = {
-  display: "flex",
-  gap: 22,
-  borderBottom: "1px solid #e2e8f0",
-  marginBottom: 14,
-};
-
-const tabBtn = {
-  borderTop: "none",
-  borderLeft: "none",
-  borderRight: "none",
-  borderBottom: "3px solid transparent",
-  background: "transparent",
-  padding: "12px 0",
-  cursor: "pointer",
-  color: "#475569",
-  fontWeight: 700,
-};
-
-const activeTabBtn = {
-  ...tabBtn,
-  color: "#2563eb",
-  borderBottom: "3px solid #2563eb",
-};
-
-const lessonActions = {
-  marginBottom: 14,
-};
-
-const tableWrap = {
-  border: "1px solid #edf2f7",
-  borderRadius: 14,
-  overflow: "hidden",
-};
-
-const table = {
-  width: "100%",
-  borderCollapse: "collapse",
-};
-
-const th = {
-  background: "#f8fafc",
-  padding: 14,
-  textAlign: "left",
-  color: "#475569",
-  fontSize: 13,
-};
-
-const td = {
-  padding: 14,
-  borderTop: "1px solid #edf2f7",
-};
-
-const emptyTd = {
-  padding: 28,
-  textAlign: "center",
-  color: "#64748b",
-};
-
-const emptyText = {
-  color: "#64748b",
-};
-
-const badge = {
-  background: "#dbeafe",
-  color: "#2563eb",
-  padding: "6px 10px",
-  borderRadius: 999,
-  fontSize: 12,
-  fontWeight: 700,
-};
-
-const input = {
-  width: "100%",
-  boxSizing: "border-box",
-  padding: "11px 12px",
-  marginBottom: 10,
-  borderRadius: 10,
-  border: "1px solid #dbe1ea",
-};
-
-const miniForm = {
-  border: "1px dashed #cbd5e1",
-  padding: 12,
-  borderRadius: 12,
-  marginBottom: 12,
-};
-
-const lessonFormBox = {
-  border: "1px dashed #cbd5e1",
-  padding: 14,
-  borderRadius: 12,
-  marginBottom: 14,
-};
-
-const smallPrimaryBtn = {
-  background: "#2563eb",
-  color: "#fff",
-  border: "none",
-  borderRadius: 8,
-  padding: "8px 12px",
-  cursor: "pointer",
-  fontWeight: 700,
-  marginRight: 8,
-};
-
-const smallLightBtn = {
-  background: "#f1f5f9",
-  color: "#334155",
-  border: "1px solid #dbe1ea",
-  borderRadius: 8,
-  padding: "8px 12px",
-  cursor: "pointer",
-};
-
-const lightBtn = {
-  background: "#fff",
-  color: "#2563eb",
-  border: "1px solid #bfdbfe",
-  borderRadius: 10,
-  padding: "10px 14px",
-  cursor: "pointer",
-  fontWeight: 700,
-};
-
-const iconDeleteBtn = {
-  border: "none",
-  background: "transparent",
-  cursor: "pointer",
-};
-
-const editBtn = {
-  background: "#eff6ff",
-  color: "#2563eb",
-  border: "1px solid #bfdbfe",
-  borderRadius: 8,
-  padding: "8px 12px",
-  cursor: "pointer",
-  marginRight: 8,
-};
-
-const deleteBtn = {
-  background: "#fff1f2",
-  color: "#e11d48",
-  border: "1px solid #fecdd3",
-  borderRadius: 8,
-  padding: "8px 12px",
-  cursor: "pointer",
-};
-
-const clickableLessonTitle = {
-  color: "#0f172a",
-  cursor: "pointer",
-  fontWeight: 700,
-};
-
-const selectedLessonTitle = {
-  color: "#2563eb",
-  cursor: "pointer",
-  fontWeight: 800,
-  textDecoration: "underline",
-};
-
-const selectedLessonRow = {
-  background: "#eff6ff",
-};
-
-const fileLinkText = {
-  color: "#2563eb",
-  cursor: "pointer",
-  textDecoration: "underline",
-  fontWeight: 700,
-};
+// Style bổ sung cho Main Tab
+const mainTabsContainer = { display: "flex", gap: "20px", borderBottom: "2px solid #e2e8f0", marginBottom: "10px" };
+const mainTabBtn = { padding: "12px 24px", background: "none", border: "none", cursor: "pointer", fontSize: "16px", fontWeight: "600", color: "#64748b", position: "relative", bottom: "-2px" };
+const activeMainTabBtn = { ...mainTabBtn, color: "#2563eb", borderBottom: "3px solid #2563eb" };
+const forumWrapper = { background: "#fff", borderRadius: "16px", padding: "20px", boxShadow: "0 8px 24px rgba(0,0,0,0.05)" };
