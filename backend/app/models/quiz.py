@@ -7,7 +7,6 @@ class Quiz(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     timeLimit = db.Column(db.Integer, nullable=False, default=0)
     passScore = db.Column(db.Float, nullable=False, default=0)
-    quizFile = db.Column(db.String(500), nullable=True)
 
     lesson_id = db.Column(db.Integer, db.ForeignKey("lessons.id"), nullable=False)
 
@@ -27,6 +26,5 @@ class Quiz(db.Model):
             "id": self.id,
             "timeLimit": self.timeLimit,
             "passScore": self.passScore,
-            "quizFile": self.quizFile,
-            "lesson_id": self.lesson_id
+            "lesson_id": self.lesson_id,
         }

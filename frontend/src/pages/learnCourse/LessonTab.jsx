@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { getCourseById } from "../../services/courseApi";
 
-export default function LessonTab({ courseId }) {
+export default function LessonTab({ courseId, progressMap, progressPercent, setProgressPercent }) {
     const [course, setCourse] = useState(null);
     const [openChapter, setOpenChapter] = useState(null);
     const navigate = useNavigate();
@@ -41,10 +41,33 @@ export default function LessonTab({ courseId }) {
         }
     }
 
+    function getProgressIcon(lessonId) {
+        const status = progressMap[lessonId];
+
+        if (status === "COMPLETED") return "✔️";
+        if (status === "IN_PROGRESS") return "⏳";
+        return "⭕";
+    }
+
     if (!course) return <p>Đang tải...</p>;
 
     return (
         <div className="chapter-list">
+            <div 
+                className="progress mb-3"
+                role="progressbar"
+                aria-label="Animated striped example"
+                aria-valuenow={progressPercent}
+                aria-valuemin="0"
+                aria-valuemax="100"
+            >
+                <div 
+                    className="progress-bar progress-bar-striped progress-bar-animated" 
+                    style={{width: `${progressPercent}%`}}
+                >
+                    {progressPercent}
+                </div>
+            </div>
             <h3>{course.name}</h3>
 
             {course.chapters?.map(chapter => (
@@ -75,7 +98,12 @@ export default function LessonTab({ courseId }) {
                                     <span className="lesson-icon">
                                         {getLessonIcon(lesson.type)}
                                     </span>
-                                    {lesson.title}
+
+                                    <span>{lesson.title}</span>
+
+                                    <span style={{ marginLeft: "auto" }}>
+                                        {getProgressIcon(lesson.id)}
+                                    </span>
                                 </div>
                             ))}
                         </div>

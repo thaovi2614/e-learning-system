@@ -10,6 +10,7 @@ import Cart from "../pages/cart/Cart";
 import MyCourses from "../pages/myCourses/MyCourses";
 import LearnCourse from "../pages/learnCourse/LearnCourse";
 import LessonViewer from "../pages/learnCourse/LessonViewer";
+import QuizPage from "../pages/learnCourse/QuizPage"
 import QuestionDetail from "../pages/learnCourse/QuestionDetail";
 import CourseManagePage from "../pages/courseManage/CourseManagePage";
 import CourseContentPage from "../pages/courseManage/CourseContentPage";
@@ -42,6 +43,7 @@ export default function AppRoutes() {
             <Route path="lesson/:lessonId" element={<LessonViewer />} />
             <Route path="forum/:questionId" element={null} />
           </Route>
+          <Route path="/quiz/:quizId" element={<PrivateRoute><QuizPage /></PrivateRoute>}/>
 
           <Route path="/manage-course" element={<PrivateRoute roles={["INSTRUCTOR", "ADMIN"]}><CourseManagePage /></PrivateRoute>} />
           <Route path="/manage-course-content/:courseId" element={<PrivateRoute roles={["INSTRUCTOR", "ADMIN"]}><CourseContentPage /></PrivateRoute>} />

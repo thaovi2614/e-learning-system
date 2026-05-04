@@ -1,4 +1,5 @@
 from app.configs.database_config import db
+from sqlalchemy.sql import func
 
 class QuizAttempt(db.Model):
     __tablename__ = "quiz_attempts"
@@ -8,4 +9,4 @@ class QuizAttempt(db.Model):
     quiz_id = db.Column(db.Integer, db.ForeignKey("quizzes.id"), nullable=False)
 
     score = db.Column(db.Float, nullable=False)
-    submittedAt = db.Column(db.DateTime, nullable=False)
+    submittedAt = db.Column(db.DateTime, server_default=func.now())

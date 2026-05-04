@@ -156,6 +156,33 @@
     background: #000;
 }
 
+.learn-container .complete-btn {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.learn-container .complete-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 14px rgba(0,0,0,0.15);
+}
+
+.learn-container .complete-btn:active {
+    transform: scale(0.98);
+}
+
+.learn-container .complete-btn.done {
+    background: #6c757d;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
 /* video */
 .learn-container video {
     width: 100%;

@@ -27,6 +27,8 @@ export default function CourseContentPage() {
   const [lessonForm, setLessonForm] = useState({
     title: "",
     type: "SLIDE",
+    timeLimit: 0,
+    passScore: 0,
     url: "",
     file: null,
   });
@@ -159,12 +161,29 @@ export default function CourseContentPage() {
         return;
       }
 
+      if (activeTab === "QUIZ") {
+        if (!lessonForm.timeLimit || lessonForm.timeLimit <= 0) {
+          alert("Thời gian thi phải lớn hơn 0");
+          return;
+        }
+
+        if (!lessonForm.passScore || lessonForm.passScore < 0 || lessonForm.passScore > 10) {
+          alert("Điểm pass không hợp lệ");
+          return;
+        }
+      }
+
       const formData = new FormData();
       formData.append("title", lessonForm.title);
       formData.append("type", activeTab);
 
       if (lessonForm.file) {
         formData.append("file", lessonForm.file);
+      }
+
+      if (activeTab === "QUIZ") {
+        formData.append("timeLimit", lessonForm.timeLimit);
+        formData.append("passScore", lessonForm.passScore);
       }
 
       if (editingLessonId) {
@@ -430,10 +449,42 @@ export default function CourseContentPage() {
                                     value={lessonForm.title}
                                     onChange={(e) => setLessonForm({ ...lessonForm, title: e.target.value })}
                                 />
+                                {activeTab==="QUIZ" && (
+                                  <div>
+                                    <div style={{ display: "flex", gap: "10px" }}>
+                                      <input
+                                        style={{ ...input, flex: 1 }}
+                                        type="number"
+                                        placeholder="Thời gian thi (phút)"
+                                        value={lessonForm.timeLimit || ""}
+                                        onChange={(e) =>
+                                          setLessonForm({
+                                            ...lessonForm,
+                                            timeLimit: e.target.value,
+                                          })
+                                        }
+                                      />
+
+                                      <input
+                                        style={{ ...input, flex: 1 }}
+                                        type="number"
+                                        step="0.1"
+                                        placeholder="Điểm pass"
+                                        value={lessonForm.passScore || ""}
+                                        onChange={(e) =>
+                                          setLessonForm({
+                                            ...lessonForm,
+                                            passScore: e.target.value,
+                                          })
+                                        }
+                                      />
+                                    </div>
+                                  </div>
+                                )}
                                 <input
                                     style={input}
                                     type="file"
-                                    accept={activeTab === "VIDEO" ? "video/*" : ".pdf,.ppt,.pptx,.doc,.docx,.txt,.png,.jpg,.jpeg"}
+                                    accept={activeTab === "VIDEO" ? "video/*": ( activeTab === "SLIDE" ? ".pdf" : ".csv")}
                                     onChange={(e) => setLessonForm({ ...lessonForm, file: e.target.files[0] })}
                                 />
                                 <button style={smallPrimaryBtn} onClick={addLesson}>
@@ -450,6 +501,12 @@ export default function CourseContentPage() {
                                     <th style={th}>#</th>
                                     <th style={th}>Tên nội dung</th>
                                     <th style={th}>Loại</th>
+                                    {activeTab==="QUIZ" && (
+                                      <>
+                                        <th style={th}>Thời gian</th>
+                                        <th style={th}>Điểm đạt</th>
+                                      </>
+                                    )}
                                     <th style={th}>Thứ tự</th>
                                     <th style={th}>Thao tác</th>
                                 </tr>
@@ -470,9 +527,21 @@ export default function CourseContentPage() {
                                         </span>
                                     </td>
                                     <td style={td}><span style={badge}>{getFileType(lesson)}</span></td>
+                                    {activeTab === "QUIZ" && (
+                                      <>
+                                        <td style={td}>
+                                          <span>{lesson.quiz.timeLimit}</span>
+                                        </td>
+                                        <td style={td}>
+                                          <span>{lesson.quiz.passScore}</span>
+                                        </td>
+                                      </>
+                                    )}
                                     <td style={td}>{lesson.order_index}</td>
                                     <td style={td}>
-                                        <button style={editBtn} onClick={() => startEditLesson(lesson)}>Sửa</button>
+                                        {activeTab !== "QUIZ" && (
+                                          <button style={editBtn} onClick={() => startEditLesson(lesson)}>Sửa</button>
+                                        )}
                                         <button style={deleteBtn} onClick={() => deleteLesson(lesson.id)}>Xóa</button>
                                     </td>
                                     </tr>
@@ -529,6 +598,6 @@ const selectedLessonRow = { background: "#eff6ff" };
 
 // Style bổ sung cho Main Tab
 const mainTabsContainer = { display: "flex", gap: "20px", borderBottom: "2px solid #e2e8f0", marginBottom: "10px" };
-const mainTabBtn = { padding: "12px 24px", background: "none", border: "none", cursor: "pointer", fontSize: "16px", fontWeight: "600", color: "#64748b", position: "relative", bottom: "-2px" };
+const mainTabBtn = { padding: "12px 24px", background: "none", borderTop: "none", borderLeft: "none", borderRight: "none", borderBottom: "3px solid transparent", cursor: "pointer", fontSize: "16px", fontWeight: "600", color: "#64748b", position: "relative", bottom: "-2px" };
 const activeMainTabBtn = { ...mainTabBtn, color: "#2563eb", borderBottom: "3px solid #2563eb" };
 const forumWrapper = { background: "#fff", borderRadius: "16px", padding: "20px", boxShadow: "0 8px 24px rgba(0,0,0,0.05)" };

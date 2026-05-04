@@ -17,6 +17,8 @@ from app.controllers.course_controller import course_bp
 from app.controllers.cart_controller import cart_bp
 from app.controllers.payment_controller import payment_bp
 from app.controllers.lesson_controller import lesson_bp
+from app.controllers.quiz_controller import quiz_bp
+from app.controllers.progress_controller import progress_bp
 from app.controllers.chapter_controller import chapter_bp
 from app.controllers.user_controller import user_bp
 
@@ -45,6 +47,8 @@ def create_app():
     app.register_blueprint(cart_bp)
     app.register_blueprint(payment_bp)
     app.register_blueprint(lesson_bp)
+    app.register_blueprint(quiz_bp)
+    app.register_blueprint(progress_bp)
     app.register_blueprint(chapter_bp)
     app.register_blueprint(user_bp)
 

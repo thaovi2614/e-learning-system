@@ -187,6 +187,37 @@ def add_course():
     except Exception as e:
         return jsonify({"message": str(e)}), 400
 
+@course_bp.route("/<int:id>", methods=["PUT"])
+@role_required("INSTRUCTOR")
+def update_course(id):
+    try:
+        data = request.form.to_dict()
+        file = request.files.get("thumbnail")
+        user_id = int(get_jwt_identity())
+
+        course = CourseService.update_course(data, file, user_id, id)
+
+        return jsonify({
+            "message": "Cập nhật khóa học thành công",
+            "data": course.to_dict()
+        }), 200
+
+    except Exception as e:
+        return jsonify({"message": str(e)}), 400
+
+@course_bp.route("/<int:id>", methods=["DELETE"])
+@role_required("INSTRUCTOR")
+def delete_course(id):
+    try:
+        user_id = int(get_jwt_identity())
+
+        CourseService.delete_course(user_id, id)
+
+        return jsonify({"message": "Đã xóa khóa học"}), 200
+
+    except Exception as e:
+        return jsonify({"message": str(e)}), 400
+
 # --- DIỄN ĐÀN (FORUM) ---
 
 @course_bp.route('/<int:course_id>/questions', methods=['GET'])

@@ -3,11 +3,14 @@ import LessonTab from "./LessonTab";
 import ForumTab from "./ForumTab";
 import QuestionDetail from "./QuestionDetail";
 import { useNavigate, useParams, Outlet, useLocation } from "react-router-dom";
+import { getProgress, getProgressDetail } from "../../services/lessonProgressApi";
 import "./learnCourse.css";
 
 export default function LearnCourse() {
     const { id, questionId } = useParams(); 
     const [tab, setTab] = useState("lesson");
+    const [progressMap, setProgressMap] = useState({});
+    const [progressPercent, setProgressPercent] = useState(0);
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -18,6 +21,21 @@ export default function LearnCourse() {
             setTab("lesson");
         }
     }, [location.pathname]);
+
+    useEffect(() => {
+        getProgressDetail(id).then(res => {
+            const map = {};
+            res.data.forEach(p => {
+                map[p.lesson_id] = p.status;
+            });
+            setProgressMap(map);
+        });
+
+        getProgress(id).then(res => {
+            setProgressPercent(res.data.progress_percent);
+        });
+
+    }, [id]);
 
     return (
         <div className="learn-container">
@@ -41,8 +59,15 @@ export default function LearnCourse() {
             <div className="tab-content">
                 {tab === "lesson" && (
                     <div className="learn-layout">
-                        <div className="learn-sidebar"><LessonTab courseId={id} /></div>
-                        <div className="learn-content"><Outlet /></div>
+                        <div className="learn-sidebar">
+                            <LessonTab 
+                                courseId={id} 
+                                progressMap={progressMap}
+                                progressPercent={progressPercent}
+                                setProgressPercent={setProgressPercent}
+                            />
+                        </div>
+                        <div className="learn-content"><Outlet context={{ setProgressMap, progressMap, setProgressPercent, id }} /></div>
                     </div>
                 )}
 

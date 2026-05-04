@@ -1,6 +1,7 @@
 import os
-from werkzeug.utils import secure_filename
-
+import csv
+import io
+import chardet
 from sqlalchemy.sql import func
 from app.configs.database_config import db
 from app.models.course import Course
@@ -9,18 +10,11 @@ from app.models.lesson import Lesson
 from app.models.enrollment import Enrollment
 from app.models.video_lesson import VideoLesson
 from app.models.slide_lesson import SlideLesson
-from app.enums.lesson_type import LessonType
 from app.models.quiz import Quiz
+from app.models.quiz_question import QuizQuestion
+from app.enums.lesson_type import LessonType
+from app.enums.answer_quiz import AnswerQuize
 import app.services.cloudinary_service as CloudinaryService
-
-BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-UPLOAD_FOLDER = os.path.join(BASE_DIR, "uploads")
-
-ALLOWED_EXTENSIONS = {
-    "SLIDE": {"pdf", "ppt", "pptx", "doc", "docx", "txt", "png", "jpg", "jpeg"},
-    "VIDEO": {"mp4", "mov", "avi", "mkv", "webm"},
-    "QUIZ": {"pdf", "doc", "docx", "txt", "png", "jpg", "jpeg"}
-}
 
 
 def check_instructor_owns_chapter(user_id, chapter_id):
@@ -57,41 +51,6 @@ def find_lesson_by_id(id):
     return lesson
 
 
-# def save_upload_file(file, lesson_type):
-#     if not file:
-#         return None
-
-#     filename = secure_filename(file.filename)
-
-#     if "." not in filename:
-#         raise Exception("File không hợp lệ")
-
-#     ext = filename.rsplit(".", 1)[1].lower()
-
-#     if ext not in ALLOWED_EXTENSIONS.get(lesson_type, set()):
-#         raise Exception(f"File không hợp lệ cho loại {lesson_type}")
-
-#     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-
-#     file_path = os.path.join(UPLOAD_FOLDER, filename)
-#     file.save(file_path)
-
-#     return file_path.replace("\\", "/")
-
-def save_upload_file(file, lesson_type):
-    if not file:
-        return None
-
-    filename = secure_filename(file.filename)
-
-    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-
-    file_path = os.path.join(UPLOAD_FOLDER, filename)
-    file.save(file_path)
-
-    return f"uploads/{filename}"
-
-
 def get_lessons_by_chapter(chapter_id):
     return Lesson.query.filter_by(
         chapter_id=chapter_id,
@@ -124,82 +83,131 @@ def add_lesson(data, file, user_id, chapter_id):
 
     order_index = max_index + 1
 
-    if lesson_type.name == "VIDEO":
-        video_url = ""
+    try:
+        # ================= VIDEO =================
+        if lesson_type.name == "VIDEO":
+            video_url = ""
 
-        if file:
-            upload_result = CloudinaryService.upload_video(file, user_id)
-            if not upload_result:
-                raise Exception("Upload video thất bại")
+            if file:
+                upload_result = CloudinaryService.upload_video(file, user_id)
+                if not upload_result:
+                    raise Exception("Upload video thất bại")
 
-            video_url = upload_result.get("original_url") or upload_result.get("stream_url")
-        
-        if not video_url:
-            raise Exception("Video phải có link hoặc file upload")
+                video_url = upload_result.get("original_url") or upload_result.get("stream_url")
 
-        lesson = VideoLesson(
-            title=title,
-            type=lesson_type,
-            order_index=order_index,
-            chapter_id=chapter_id,
-            videoUrl=video_url
-        )
+            if not video_url:
+                raise Exception("Video phải có link hoặc file upload")
 
-    elif lesson_type.name == "SLIDE":
-        slide_file = ""
+            lesson = VideoLesson(
+                title=title,
+                type=lesson_type,
+                order_index=order_index,
+                chapter_id=chapter_id,
+                videoUrl=video_url
+            )
 
-        if file:
-            upload_result = CloudinaryService.upload_pdf(file, user_id)
-            if not upload_result:
-                raise Exception("Upload PDF thất bại")
+        # ================= SLIDE =================
+        elif lesson_type.name == "SLIDE":
+            slide_file = ""
 
-            slide_file = upload_result.get("secure_url")
+            if file:
+                upload_result = CloudinaryService.upload_pdf(file, user_id)
+                if not upload_result:
+                    raise Exception("Upload PDF thất bại")
 
-        if not slide_file:
-            raise Exception("Slide phải có file hoặc link")
+                slide_file = upload_result.get("secure_url")
 
-        lesson = SlideLesson(
-            title=title,
-            type=lesson_type,
-            order_index=order_index,
-            chapter_id=chapter_id,
-            slideFile=slide_file
-        )
+            if not slide_file:
+                raise Exception("Slide phải có file")
 
-    elif lesson_type.name == "QUIZ":
-        quiz_file = ""
+            lesson = SlideLesson(
+                title=title,
+                type=lesson_type,
+                order_index=order_index,
+                chapter_id=chapter_id,
+                slideFile=slide_file
+            )
 
-        if file:
-            upload_result = CloudinaryService.upload_pdf(file, user_id)
-            if not upload_result:
-                raise Exception("Upload file quiz thất bại")
+        # ================= QUIZ =================
+        elif lesson_type.name == "QUIZ":
+            if not file:
+                raise Exception("Quiz phải upload file CSV")
 
-            quiz_file = upload_result.get("secure_url")
+            lesson = Lesson(
+                title=title,
+                type=lesson_type,
+                order_index=order_index,
+                chapter_id=chapter_id
+            )
 
-        if not quiz_file:
-            raise Exception("Quiz phải có file")
+            db.session.add(lesson)
+            db.session.flush()
 
-        lesson = Lesson(
-            title=title,
-            type=lesson_type,
-            order_index=order_index,
-            chapter_id=chapter_id
-        )
+            timeLimit = data.get("timeLimit", 0)
+            passScore = data.get("passScore", 0)
+
+            quiz = Quiz(
+                lesson_id=lesson.id,
+                timeLimit=timeLimit,
+                passScore=passScore
+            )
+            db.session.add(quiz)
+            db.session.flush()
+
+            file.stream.seek(0)
+            content = file.stream.read()
+            encoding = chardet.detect(content)["encoding"]
+
+            text = content.decode(encoding or "utf-8", errors="ignore")
+            stream = io.StringIO(text)
+            reader = csv.DictReader(stream)
+
+            required_fields = ["question", "optionA", "optionB", "optionC", "optionD", "correct"]
+
+            if not reader.fieldnames or not all(f in reader.fieldnames for f in required_fields):
+                raise Exception("CSV thiếu cột bắt buộc")
+
+            questions = []
+
+            for row in reader:
+                correct = row["correct"].strip().upper()
+
+                if correct not in ["A", "B", "C", "D"]:
+                    raise Exception("Đáp án phải là A/B/C/D")
+
+                question = QuizQuestion(
+                    question_text=row["question"].strip(),
+                    optionA=row["optionA"].strip(),
+                    optionB=row["optionB"].strip(),
+                    optionC=row["optionC"].strip(),
+                    optionD=row["optionD"].strip(),
+                    correct_answer=AnswerQuize[correct],
+                    quiz_id=quiz.id
+                )
+
+                questions.append(question)
+
+            db.session.add_all(questions)
+
+            db.session.commit()
+            return lesson
+
+        # ================= DEFAULT =================
+        else:
+            lesson = Lesson(
+                title=title,
+                type=lesson_type,
+                order_index=order_index,
+                chapter_id=chapter_id
+            )
 
         db.session.add(lesson)
-        db.session.flush()
-
-        quiz = Quiz(
-            lesson_id=lesson.id,
-            timeLimit=0,
-            passScore=0,
-            quizFile=quiz_file
-        )
-
-        db.session.add(quiz)
         db.session.commit()
-
         return lesson
+
+    except Exception as e:
+        db.session.rollback()
+        raise Exception(str(e))
 
     else:
         lesson = Lesson(
@@ -249,23 +257,23 @@ def update_lesson(data, file, user_id, lesson_id):
             lesson.slideFile = upload_result.get("secure_url")
 
     # ================= QUIZ =================
-    elif lesson.type.name == "QUIZ":
-        quiz = lesson.quiz
+    # elif lesson.type.name == "QUIZ":
+    #     quiz = lesson.quiz
 
-        if not quiz:
-            quiz = Quiz(
-                lesson_id=lesson.id,
-                timeLimit=0,
-                passScore=0
-            )
-            db.session.add(quiz)
+    #     if not quiz:
+    #         quiz = Quiz(
+    #             lesson_id=lesson.id,
+    #             timeLimit=0,
+    #             passScore=0
+    #         )
+    #         db.session.add(quiz)
 
-        if file:
-            upload_result = CloudinaryService.upload_pdf(file, user_id)
-            if not upload_result:
-                raise Exception("Upload file quiz thất bại")
+    #     if file:
+    #         upload_result = CloudinaryService.upload_pdf(file, user_id)
+    #         if not upload_result:
+    #             raise Exception("Upload file quiz thất bại")
 
-            quiz.quizFile = upload_result.get("secure_url")
+    #         quiz.quizFile = upload_result.get("secure_url")
 
     db.session.commit()
 
