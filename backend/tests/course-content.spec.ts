@@ -1,182 +1,207 @@
 import { test, expect, Page } from '@playwright/test';
 
+
 const BASE = 'http://localhost:5173';
-const COURSE_ID = 3; // Thay bằng ID khóa học thực tế của instructor1
+const COURSE_ID = 2;
+const TEST_FILE = 'tests/upload/C1_Tong_quan.pdf';
 
 async function loginInstructor(page: Page) {
     await page.goto(`${BASE}/login`);
-    await page.locator('input[name="username"]').fill('instructor1');
-    await page.locator('input[name="password"]').fill('1234');
+    await page.getByPlaceholder('Tên đăng nhập').fill('instructor1');
+    await page.getByPlaceholder('Mật khẩu').fill('1234');
     await page.getByRole('button', { name: /đăng nhập/i }).click();
-    await expect(page).not.toHaveURL(/\/login/, { timeout: 5000 });
+    await expect(page).not.toHaveURL(/\/login/);
 }
 
-test.describe('Quản Lý Nội Dung Bài Học (CourseContentPage)', () => {
+async function openCourseContent(page: Page) {
+    await page.goto(`${BASE}/manage-course-content/${COURSE_ID}`);
+    await expect(page.getByRole('heading', { name: /quản lý khóa học/i })).toBeVisible();
+}
 
+async function goContentTab(page: Page) {
+    await page.getByRole('button', { name: /nội dung bài học/i }).click();
+    await expect(page.getByText(/danh sách chương/i)).toBeVisible();
+}
+
+async function goForumTab(page: Page) {
+    await page.getByRole('button', { name: /diễn đàn thảo luận/i }).click();
+    await expect(page.getByRole('heading', { name: /^diễn đàn$/i })).toBeVisible();
+}
+
+async function ensureSlideLesson(page: Page) {
+    await goContentTab(page);
+    await page.getByRole('button', { name: /^slide$/i }).click();
+
+    const editBtn = page.getByRole('button', { name: /^sửa$/i }).first();
+
+    if (await editBtn.isVisible().catch(() => false)) {
+        return;
+    }
+
+    await page.getByRole('button', { name: /\+ thêm slide/i }).click();
+    await page.getByPlaceholder(/tên nội dung/i).fill(`Slide test ${Date.now()}`);
+
+    const fileInput = page.locator('input[type="file"]').first();
+    await fileInput.setInputFiles(TEST_FILE);
+
+    page.once('dialog', async dialog => {
+        await dialog.accept();
+    });
+
+    await page.getByRole('button', { name: /lưu nội dung/i }).click();
+
+    await expect(page.getByRole('button', { name: /^sửa$/i }).first()).toBeVisible({
+        timeout: 10000,
+    });
+}
+
+test.describe('Quản Lý Nội Dung Bài Học (CourseContentPage v2)', () => {
     test.beforeEach(async ({ page }) => {
         await loginInstructor(page);
-        await page.goto(`${BASE}/manage-course-content/${COURSE_ID}`);
-        await page.waitForTimeout(2000);
+        await openCourseContent(page);
     });
 
-    // ─────────────────────────────────────────────
-    // TC1: Giao diện hiển thị đầy đủ
-    // ─────────────────────────────────────────────
     test('TC1 - Hiển thị đầy đủ giao diện trang', async ({ page }) => {
-        await expect(page.getByRole('heading', { name: /quản lý nội dung bài học/i })).toBeVisible();
+        await expect(page.getByRole('heading', { name: /quản lý khóa học/i })).toBeVisible();
+        await expect(page.getByRole('button', { name: /nội dung bài học/i })).toBeVisible();
+        await expect(page.getByRole('button', { name: /diễn đàn thảo luận/i })).toBeVisible();
         await expect(page.getByRole('button', { name: /quay lại khóa học/i })).toBeVisible();
-        await expect(page.getByRole('button', { name: /thêm chương/i })).toBeVisible();
-
-        // 3 tab
-        await expect(page.getByRole('button', { name: /^slide$/i })).toBeVisible();
-        await expect(page.getByRole('button', { name: /^video$/i })).toBeVisible();
-        await expect(page.getByRole('button', { name: /^bài tập$/i })).toBeVisible();
     });
 
-    // ─────────────────────────────────────────────
-    // TC2: Hiển thị danh sách chương
-    // ─────────────────────────────────────────────
-    test('TC2 - Hiển thị danh sách chương của khóa học', async ({ page }) => {
-        const chapters = page.locator('[style*="border"][style*="radius"]').filter({ hasText: /chương/i });
-        const count = await chapters.count();
-
-        if (count === 0) {
-            await expect(page.getByText(/chưa có chương nào/i)).toBeVisible();
-        } else {
-            expect(count).toBeGreaterThan(0);
-        }
+    test('TC2 - Mặc định tab Nội dung bài học được chọn', async ({ page }) => {
+        await expect(page.getByText(/danh sách chương/i)).toBeVisible();
+        await expect(page.getByText(/nội dung:/i)).toBeVisible();
     });
 
-    // ─────────────────────────────────────────────
-    // TC3: Mở form thêm chương
-    // ─────────────────────────────────────────────
-    test('TC3 - Bấm Thêm chương mở form', async ({ page }) => {
-        await page.getByRole('button', { name: /thêm chương/i }).click();
+    test('TC3 - Click tab Diễn đàn hiển thị forum', async ({ page }) => {
+        await goForumTab(page);
 
-        await expect(page.getByPlaceholder(/tên chương/i)).toBeVisible();
-        await expect(page.getByRole('button', { name: /^lưu$/i })).toBeVisible();
-        await expect(page.getByRole('button', { name: /^hủy$/i })).toBeVisible();
+        await expect(page.getByPlaceholder(/viết câu hỏi/i)).toBeVisible();
+        await expect(page.getByRole('button', { name: /^đăng$/i })).toBeVisible();
+        await expect(page.getByText(/danh sách câu hỏi/i)).toBeVisible();
     });
 
-    // ─────────────────────────────────────────────
-    // TC4: Thêm chương thành công
-    // ─────────────────────────────────────────────
-    test('TC4 - Thêm chương mới thành công', async ({ page }) => {
-        page.on('dialog', async (dialog) => {
-            expect(dialog.message()).toMatch(/thêm chương thành công/i);
-            await dialog.accept();
-        });
+    test('TC4 - Click lại tab Nội dung ẩn forum hiện bài học', async ({ page }) => {
+        await goForumTab(page);
+        await goContentTab(page);
 
-        await page.getByRole('button', { name: /thêm chương/i }).click();
-        await page.getByPlaceholder(/tên chương/i).fill(`Chương Test ${Date.now()}`);
-        await page.getByRole('button', { name: /^lưu$/i }).click();
-
-        await page.waitForTimeout(1500);
-
-        // Form phải đóng lại
-        await expect(page.getByPlaceholder(/tên chương/i)).not.toBeVisible({ timeout: 3000 });
+        await expect(page.getByText(/danh sách chương/i)).toBeVisible();
+        await expect(page.getByRole('button', { name: /\+ thêm chương/i })).toBeVisible();
     });
 
-    // ─────────────────────────────────────────────
-    // TC5: Thêm chương tên rỗng -> alert lỗi
-    // ─────────────────────────────────────────────
-    test('TC5 - Thêm chương tên rỗng hiện alert lỗi', async ({ page }) => {
-        page.on('dialog', async (dialog) => {
-            expect(dialog.message()).toMatch(/tên chương không được để trống/i);
-            await dialog.accept();
-        });
+    test('TC5 - Diễn đàn đăng bài thành công', async ({ page }) => {
+        await goForumTab(page);
 
-        await page.getByRole('button', { name: /thêm chương/i }).click();
-        await page.getByRole('button', { name: /^lưu$/i }).click();
+        const content = `Câu hỏi test ${Date.now()}`;
+        await page.getByPlaceholder(/viết câu hỏi/i).fill(content);
+
+        await page.getByRole('button', { name: /^đăng$/i }).click();
+
+        await expect(page.getByText(content)).toBeVisible({ timeout: 10000 });
     });
 
-    // ─────────────────────────────────────────────
-    // TC6: Bấm Hủy đóng form chương
-    // ─────────────────────────────────────────────
-    test('TC6 - Bấm Hủy đóng form thêm chương', async ({ page }) => {
-        await page.getByRole('button', { name: /thêm chương/i }).click();
-        await expect(page.getByPlaceholder(/tên chương/i)).toBeVisible();
+    test('TC6 - Diễn đàn không đăng được bài trống', async ({ page }) => {
+        await goForumTab(page);
 
-        await page.getByRole('button', { name: /^hủy$/i }).click();
-        await expect(page.getByPlaceholder(/tên chương/i)).not.toBeVisible();
+        const beforeCount = await page.locator('tbody tr').count();
+
+        await page.getByPlaceholder(/viết câu hỏi/i).fill('   ');
+        await page.getByRole('button', { name: /^đăng$/i }).click();
+
+        await expect(page.locator('tbody tr')).toHaveCount(beforeCount);
     });
 
-    // ─────────────────────────────────────────────
-    // TC7: Click chương -> hiển thị nội dung chương đó
-    // ─────────────────────────────────────────────
-    test('TC7 - Click chương hiển thị nội dung bên phải', async ({ page }) => {
-        // Lấy chương đầu tiên
-        const chapterItem = page.locator('div').filter({ hasText: /^Chương \d+:/ }).first();
-        const count = await chapterItem.count();
+    test('TC7 - Diễn đàn hiển thị bài viết sau khi đăng', async ({ page }) => {
+        await goForumTab(page);
 
-        if (count === 0) {
-            test.skip();
-            return;
-        }
+        const content = `Test nội dung ${Date.now()}`;
+        const textarea = page.getByPlaceholder(/viết câu hỏi/i);
 
-        await chapterItem.click();
-        await page.waitForTimeout(500);
+        await textarea.fill(content);
+        await page.getByRole('button', { name: /^đăng$/i }).click();
 
-        // Panel phải hiển thị "Nội dung: Chương..."
-        await expect(page.getByText(/nội dung:.*chương/i)).toBeVisible();
+        await expect(page.getByText(content)).toBeVisible({ timeout: 10000 });
     });
 
-    // ─────────────────────────────────────────────
-    // TC8: Chuyển tab Slide / Video / Bài tập
-    // ─────────────────────────────────────────────
-    test('TC8 - Chuyển tab Slide Video Bài tập', async ({ page }) => {
-        await page.getByRole('button', { name: /^video$/i }).click();
-        await expect(page.getByRole('button', { name: /thêm video/i })).toBeVisible();
-
-        await page.getByRole('button', { name: /^bài tập$/i }).click();
-        await expect(page.getByRole('button', { name: /thêm bài tập/i })).toBeVisible();
+    test('TC8 - Chuyển tab Slide Video Bài tập trong Nội dung', async ({ page }) => {
+        await goContentTab(page);
 
         await page.getByRole('button', { name: /^slide$/i }).click();
-        await expect(page.getByRole('button', { name: /thêm slide/i })).toBeVisible();
+        await expect(page.getByRole('button', { name: /\+ thêm slide/i })).toBeVisible();
+
+        await page.getByRole('button', { name: /^video$/i }).click();
+        await expect(page.getByRole('button', { name: /\+ thêm video/i })).toBeVisible();
+
+        await page.getByRole('button', { name: /^bài tập$/i }).click();
+        await expect(page.getByRole('button', { name: /\+ thêm bài tập/i })).toBeVisible();
     });
 
-    // ─────────────────────────────────────────────
-    // TC9: Mở form thêm nội dung (lesson)
-    // ─────────────────────────────────────────────
-    test('TC9 - Bấm Thêm slide mở form thêm nội dung', async ({ page }) => {
-        await page.getByRole('button', { name: /thêm slide/i }).click();
+    test('TC9 - Thêm chương mới thành công', async ({ page }) => {
+        await goContentTab(page);
 
-        await expect(page.getByPlaceholder(/tên nội dung/i)).toBeVisible();
-        await expect(page.getByRole('button', { name: /lưu nội dung/i })).toBeVisible();
-        await expect(page.getByRole('button', { name: /^hủy$/i })).toBeVisible();
-    });
+        const chapterName = `Chương Test ${Date.now()}`;
+        await page.getByRole('button', { name: /\+ thêm chương/i }).click();
+        await page.getByPlaceholder(/tên chương/i).fill(chapterName);
 
-    // ─────────────────────────────────────────────
-    // TC10: Thêm lesson tên rỗng -> alert lỗi
-    // ─────────────────────────────────────────────
-    test('TC10 - Thêm nội dung tên rỗng hiện alert lỗi', async ({ page }) => {
-        page.on('dialog', async (dialog) => {
-            expect(dialog.message()).toMatch(/tên nội dung không được để trống/i);
+        let alertText = '';
+        page.once('dialog', async dialog => {
+            alertText = dialog.message();
             await dialog.accept();
         });
 
-        await page.getByRole('button', { name: /thêm slide/i }).click();
-        await page.getByRole('button', { name: /lưu nội dung/i }).click();
+        await page.getByRole('button', { name: /^lưu$/i }).click();
+
+        await expect.poll(() => alertText, { timeout: 5000 }).toContain('Thêm chương thành công');
     });
 
-    // ─────────────────────────────────────────────
-    // TC11: Bấm Hủy đóng form lesson
-    // ─────────────────────────────────────────────
-    test('TC11 - Bấm Hủy đóng form thêm nội dung', async ({ page }) => {
-        await page.getByRole('button', { name: /thêm slide/i }).click();
+    test('TC10 - Thêm chương tên rỗng hiện alert lỗi', async ({ page }) => {
+        await goContentTab(page);
+
+        await page.getByRole('button', { name: /\+ thêm chương/i }).click();
+
+        let alertText = '';
+        page.once('dialog', async dialog => {
+            alertText = dialog.message();
+            await dialog.accept();
+        });
+
+        await page.getByRole('button', { name: /^lưu$/i }).click();
+
+        await expect.poll(() => alertText).toContain('Tên chương không được để trống');
+    });
+
+    test('TC11 - Bấm Sửa lesson mở form với tên điền sẵn', async ({ page }) => {
+        await ensureSlideLesson(page);
+
+        const editBtns = page.getByRole('button', { name: /^sửa$/i });
+        await expect(editBtns.first()).toBeVisible({ timeout: 10000 });
+
+        await editBtns.first().click();
+
         await expect(page.getByPlaceholder(/tên nội dung/i)).toBeVisible();
-
-        await page.getByRole('button', { name: /^hủy$/i }).click();
-        await expect(page.getByPlaceholder(/tên nội dung/i)).not.toBeVisible();
+        await expect(page.getByPlaceholder(/tên nội dung/i)).not.toHaveValue('');
+        await expect(page.getByRole('button', { name: /cập nhật nội dung/i })).toBeVisible();
     });
 
-    
-    // ─────────────────────────────────────────────
-    // TC12: Bấm Quay lại -> về trang quản lý khóa học
-    // ─────────────────────────────────────────────
-    test('TC12 - Bấm Quay lại chuyển về trang quản lý khóa học', async ({ page }) => {
+    test('TC12 - Bấm Xóa lesson hiện dialog xác nhận', async ({ page }) => {
+        await ensureSlideLesson(page);
+
+        const deleteBtns = page.getByRole('button', { name: /^xóa$/i });
+        await expect(deleteBtns.first()).toBeVisible({ timeout: 10000 });
+
+        let confirmText = '';
+        page.once('dialog', async dialog => {
+            confirmText = dialog.message();
+            await dialog.dismiss();
+        });
+
+        await deleteBtns.first().click();
+
+        await expect.poll(() => confirmText).toContain('Xác nhận xoá nội dung này');
+    });
+
+    test('TC13 - Bấm Quay lại về trang quản lý khóa học', async ({ page }) => {
         await page.getByRole('button', { name: /quay lại khóa học/i }).click();
-        await expect(page).toHaveURL(`${BASE}/manage-course`, { timeout: 5000 });
+        await expect(page).toHaveURL(/\/manage-course$/);
     });
-
 });
