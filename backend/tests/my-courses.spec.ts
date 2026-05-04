@@ -4,8 +4,8 @@ const BASE = 'http://localhost:5173';
 
 async function loginStudent(page: Page) {
   await page.goto(`${BASE}/login`);
-  await page.locator('input[name="username"]').fill('binh');
-  await page.locator('input[name="password"]').fill('binh');
+  await page.locator('input[name="username"]').fill('vi');
+  await page.locator('input[name="password"]').fill('123');
   await page.getByRole('button', { name: /đăng nhập/i }).click();
   await expect(page).not.toHaveURL(/\/login/, { timeout: 5000 });
 }
