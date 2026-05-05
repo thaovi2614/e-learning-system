@@ -41,6 +41,7 @@ export default function AppRoutes() {
           
           <Route path="/learn/:id" element={<PrivateRoute><LearnCourse /></PrivateRoute>}>
             <Route path="lesson/:lessonId" element={<LessonViewer />} />
+            <Route path="forum" element={null} />
             <Route path="forum/:questionId" element={null} />
           </Route>
           <Route path="/quiz/:quizId" element={<PrivateRoute><QuizPage /></PrivateRoute>}/>

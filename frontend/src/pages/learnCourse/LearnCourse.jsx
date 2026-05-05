@@ -50,7 +50,7 @@ export default function LearnCourse() {
                 </button>
                 <button 
                     className={tab === "forum" ? "active" : ""}
-                    onClick={() => { setTab("forum"); navigate(`/learn/${id}`); }}
+                    onClick={() => { setTab("forum"); navigate(`/learn/${id}/forum`); }}
                 >
                     Diễn đàn
                 </button>

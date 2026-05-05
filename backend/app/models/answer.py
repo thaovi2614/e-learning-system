@@ -9,3 +9,5 @@ class Answer(db.Model):
     question_id = db.Column(db.Integer, db.ForeignKey("questions.id"), nullable=False)
     sentAt = db.Column(db.DateTime)
     file_url = db.Column(db.String(255), nullable=True)
+    parent_id = db.Column(db.Integer, db.ForeignKey('answers.id'), nullable=True)
+    is_correct = db.Column(db.Boolean, default=False)

@@ -40,6 +40,7 @@ export default function ForumTab({ courseId }) {
             
             setContent("");
             setFile(null); 
+            alert("Đã đăng thành công");
             fetchQuestions();
         } catch (err) {
             alert("Không thể đăng câu hỏi!");

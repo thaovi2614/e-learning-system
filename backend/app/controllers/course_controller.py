@@ -110,13 +110,11 @@ from app.models.user import User
 from app.models.answer import Answer
 from datetime import datetime
 from werkzeug.utils import secure_filename
+import cloudinary.uploader
 
 course_bp = Blueprint("course", __name__, url_prefix="/api/courses")
 
-UPLOAD_FORUM_FOLDER = 'app/static/uploads/forum'
-if not os.path.exists(UPLOAD_FORUM_FOLDER):
-    os.makedirs(UPLOAD_FORUM_FOLDER)
-
+# --- PHẦN QUẢN LÝ KHÓA HỌC (COURSE) ---
 
 @course_bp.route("/manage", methods=["GET"])
 @role_required("INSTRUCTOR")
@@ -165,7 +163,7 @@ def get_courses():
             user = UserService.find_user_by_id(int(user_id)) if user_id else None
         except:
             user = None
-        is_admin = user and user.role.name == "ADMIN"
+        is_admin = user and getattr(user, 'role', None) and user.role.name == "ADMIN"
         result = CourseService.find_courses(data, is_admin)
         return jsonify({
             "items": [c.to_dict() for c in result["items"]],
@@ -194,14 +192,11 @@ def update_course(id):
         data = request.form.to_dict()
         file = request.files.get("thumbnail")
         user_id = int(get_jwt_identity())
-
         course = CourseService.update_course(data, file, user_id, id)
-
         return jsonify({
             "message": "Cập nhật khóa học thành công",
             "data": course.to_dict()
         }), 200
-
     except Exception as e:
         return jsonify({"message": str(e)}), 400
 
@@ -210,15 +205,12 @@ def update_course(id):
 def delete_course(id):
     try:
         user_id = int(get_jwt_identity())
-
         CourseService.delete_course(user_id, id)
-
         return jsonify({"message": "Đã xóa khóa học"}), 200
-
     except Exception as e:
         return jsonify({"message": str(e)}), 400
 
-# --- DIỄN ĐÀN (FORUM) ---
+# --- PHẦN DIỄN ĐÀN (FORUM) ---
 
 @course_bp.route('/<int:course_id>/questions', methods=['GET'])
 def get_questions(course_id):
@@ -231,7 +223,7 @@ def get_questions(course_id):
         for q, username in questions:
             result.append({
                 "id": q.id, "content": q.content, "username": username,
-                "student_id": q.student_id, "file_url": q.file_url,
+                "student_id": q.student_id, "file_url": getattr(q, 'file_url', None),
                 "sentAt": q.sentAt.strftime("%d/%m/%Y") if q.sentAt else "N/A"
             })
         return jsonify(result), 200
@@ -246,39 +238,46 @@ def post_question():
         user_id = get_jwt_identity()
         course_id = request.form.get('course_id')
         file = request.files.get('file')
+        
         file_url = None
         if file:
-            filename = secure_filename(f"{datetime.now().timestamp()}_{file.filename}")
-            file.save(os.path.join(UPLOAD_FORUM_FOLDER, filename))
-            file_url = f"static/uploads/forum/{filename}"
+            upload_result = cloudinary.uploader.upload(file, folder="forum/questions")
+            file_url = upload_result['secure_url'] 
+            
         new_q = Question(
             content=content, student_id=user_id, course_id=course_id,
             file_url=file_url, sentAt=datetime.now()
         )
         db.session.add(new_q)
         db.session.commit()
-        return jsonify({"message": "Đăng thành công"}), 201
+        return jsonify({"message": "Đăng thành công", "file_url": file_url}), 201
     except Exception as e:
         return jsonify({"message": str(e)}), 400
 
 @course_bp.route('/questions/<int:q_id>', methods=['GET'])
 def get_question_detail(q_id):
     try:
-        res = db.session.query(Question, User.username).join(User, Question.student_id == User.id).filter(Question.id == q_id).first()
+        res = db.session.query(Question, User).join(User, Question.student_id == User.id).filter(Question.id == q_id).first()
         if not res: return jsonify({"message": "Không thấy câu hỏi"}), 404
-        q, username = res
-        answers = db.session.query(Answer, User.username).join(User, Answer.user_id == User.id).filter(Answer.question_id == q_id).all()
+        q, user_q = res
+        
+        answers_data = db.session.query(Answer, User).join(User, Answer.user_id == User.id).filter(Answer.question_id == q_id).all()
+        
         return jsonify({
             "question": {
-                "id": q.id, "content": q.content, "username": username, 
-                "file_url": q.file_url, "sentAt": q.sentAt.strftime("%H:%M %d/%m/%Y")
+                "id": q.id, "content": q.content, "username": user_q.username, 
+                "file_url": getattr(q, 'file_url', None), 
+                "role": user_q.role.name if getattr(user_q, 'role', None) else "STUDENT", 
+                "sentAt": q.sentAt.strftime("%H:%M %d/%m/%Y")
             },
             "answers": [{
-                "id": a.id, "content": a.content, "username": uname, 
-                "user_id": a.user_id,
-                "file_url": getattr(a, 'file_url', None), # Thêm trường file_url cho câu trả lời
+                "id": a.id, "content": a.content, "username": u.username, 
+                "user_id": a.user_id, "parent_id": getattr(a, 'parent_id', None),
+                "file_url": getattr(a, 'file_url', None),
+                "is_correct": getattr(a, 'is_correct', False),
+                "role": u.role.name if getattr(u, 'role', None) else "STUDENT",
                 "sentAt": a.sentAt.strftime("%H:%M %d/%m/%Y")
-            } for a, uname in answers]
+            } for a, u in answers_data]
         }), 200
     except Exception as e:
         return jsonify({"message": str(e)}), 400
@@ -288,28 +287,26 @@ def get_question_detail(q_id):
 def post_answer(q_id):
     try:
         user_id = int(get_jwt_identity())
-        content = request.form.get('content') # Lấy chữ từ form
-        file = request.files.get('file')      # Lấy file từ form
+        content = request.form.get('content')
+        parent_id = request.form.get('parent_id')
+        file = request.files.get('file')
         
         if not content:
             return jsonify({"message": "Thiếu nội dung trả lời"}), 422
-
+            
         file_url = None
         if file:
-            filename = secure_filename(f"{datetime.now().timestamp()}_{file.filename}")
-            file.save(os.path.join(UPLOAD_FORUM_FOLDER, filename))
-            file_url = f"static/uploads/forum/{filename}"
-
+            upload_result = cloudinary.uploader.upload(file, folder="forum/answers")
+            file_url = upload_result['secure_url']
+            
         new_ans = Answer(
-            content=content,
-            user_id=user_id,
-            question_id=q_id,
-            file_url=file_url, # Lưu file_url vào DB
-            sentAt=datetime.now()
+            content=content, user_id=user_id, question_id=q_id,
+            parent_id=parent_id if parent_id and parent_id != 'null' else None,
+            file_url=file_url, sentAt=datetime.now()
         )
         db.session.add(new_ans)
         db.session.commit()
-        return jsonify({"message": "Đã gửi câu trả lời thành công"}), 201
+        return jsonify({"message": "Đã gửi phản hồi thành công"}), 201
     except Exception as e:
         db.session.rollback()
         return jsonify({"message": str(e)}), 400
@@ -319,21 +316,16 @@ def post_answer(q_id):
 def delete_question(q_id):
     try:
         user_id = int(get_jwt_identity())
-        
-        # Tìm câu hỏi trong database
         question = db.session.query(Question).filter(Question.id == q_id).first()
-        
         if not question:
             return jsonify({"message": "Không tìm thấy câu hỏi"}), 404
-            
-        # Kiểm tra xem người đang thao tác có phải là chủ bài đăng không
         if question.student_id != user_id:
             return jsonify({"message": "Bạn không có quyền xóa câu hỏi này"}), 403
-            
-        # Thực hiện xóa
+        # Xóa cmt con hết
+        db.session.query(Answer).filter(Answer.question_id == q_id).delete()
+
         db.session.delete(question)
         db.session.commit()
-        
         return jsonify({"message": "Đã xóa câu hỏi thành công", "success": True}), 200
     except Exception as e:
         db.session.rollback()
@@ -344,29 +336,20 @@ def delete_question(q_id):
 def update_question(q_id):
     try:
         user_id = int(get_jwt_identity())
-        
-        # Tìm câu hỏi trong database
         question = db.session.query(Question).filter(Question.id == q_id).first()
-        
         if not question:
             return jsonify({"message": "Không tìm thấy câu hỏi"}), 404
-            
-        # Kiểm tra quyền
         if question.student_id != user_id:
             return jsonify({"message": "Bạn không có quyền sửa câu hỏi này"}), 403
             
-        # LẤY DỮ LIỆU TỪ FORM (Vì frontend sẽ gửi FormData chứa chữ và file)
         content = request.form.get('content')
         file = request.files.get('file')
         
         if content:
             question.content = content
-            
-        # Nếu người dùng chọn file mới để upload
         if file:
-            filename = secure_filename(f"{datetime.now().timestamp()}_{file.filename}")
-            file.save(os.path.join(UPLOAD_FORUM_FOLDER, filename))
-            question.file_url = f"static/uploads/forum/{filename}"
+            upload_result = cloudinary.uploader.upload(file, folder="forum/questions")
+            question.file_url = upload_result['secure_url']
             
         db.session.commit()
         return jsonify({"message": "Cập nhật thành công", "success": True}), 200
@@ -380,7 +363,6 @@ def update_answer(ans_id):
     try:
         user_id = int(get_jwt_identity())
         ans = db.session.query(Answer).filter(Answer.id == ans_id).first()
-        
         if not ans: return jsonify({"message": "Không tìm thấy phản hồi"}), 404
         if ans.user_id != user_id: return jsonify({"message": "Không có quyền sửa"}), 403
             
@@ -389,11 +371,9 @@ def update_answer(ans_id):
         
         if content:
             ans.content = content
-            
         if file:
-            filename = secure_filename(f"{datetime.now().timestamp()}_{file.filename}")
-            file.save(os.path.join(UPLOAD_FORUM_FOLDER, filename))
-            ans.file_url = f"static/uploads/forum/{filename}"
+            upload_result = cloudinary.uploader.upload(file, folder="forum/answers")
+            ans.file_url = upload_result['secure_url']
             
         db.session.commit()
         return jsonify({"message": "Đã cập nhật"}), 200
@@ -407,13 +387,28 @@ def delete_answer(ans_id):
     try:
         user_id = int(get_jwt_identity())
         ans = db.session.query(Answer).filter(Answer.id == ans_id).first()
-        
         if not ans: return jsonify({"message": "Không tìm thấy phản hồi"}), 404
         if ans.user_id != user_id: return jsonify({"message": "Không có quyền xóa"}), 403
             
         db.session.delete(ans)
         db.session.commit()
         return jsonify({"message": "Đã xóa"}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"message": str(e)}), 400
+
+@course_bp.route('/answers/<int:ans_id>/correct', methods=['PUT'])
+@jwt_required()
+@role_required("INSTRUCTOR")
+def mark_correct_answer(ans_id):
+    try:
+        ans = db.session.query(Answer).filter(Answer.id == ans_id).first()
+        if not ans: return jsonify({"message": "Không tìm thấy phản hồi"}), 404
+        
+        ans.is_correct = not getattr(ans, 'is_correct', False)
+        db.session.commit()
+        
+        return jsonify({"message": "Đã lưu thay đổi"}), 200
     except Exception as e:
         db.session.rollback()
         return jsonify({"message": str(e)}), 400
