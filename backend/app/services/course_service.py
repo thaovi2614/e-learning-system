@@ -33,6 +33,34 @@ def get_my_courses(data, user_id):
         "total_pages": pagination.pages
     }
 
+def get_courses_by_category(category_id, exclude_id=None, limit=5):
+    category = db.session.get(Category, category_id)
+    if not category:
+        return []
+
+    parent_id = category.parent_id if category.parent_id else category.id
+
+    sibling_ids = [
+        c.id for c in Category.query.filter_by(parent_id=parent_id).all()
+    ]
+
+    query = Course.query.filter(
+        Course.category_id.in_(sibling_ids),
+        Course.active == True
+    )
+
+    if exclude_id:
+        query = query.filter(Course.id != exclude_id)
+
+    courses = query.limit(limit).all()
+
+    return [{
+        "id": c.id,
+        "name": c.name,
+        "thumbnail": c.thumbnail or "",
+        "price": float(c.price) if c.price else 0
+    } for c in courses]
+
 def find_courses(data, is_admin=False):
     name = data.get("name","").strip()
     slug_path = data.get("category")

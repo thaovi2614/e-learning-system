@@ -10,6 +10,7 @@ from app.configs.config import Config
 from app.configs.database_config import init_db
 from app.configs.jwt_config import init_jwt
 from app.configs.cloudinary_config import init_cloudinary
+from app.configs.socketIO_config import init_socketIO
 
 from app.controllers.auth_controller import auth_bp
 from app.controllers.category_controller import category_bp
@@ -21,8 +22,11 @@ from app.controllers.quiz_controller import quiz_bp
 from app.controllers.progress_controller import progress_bp
 from app.controllers.chapter_controller import chapter_bp
 from app.controllers.user_controller import user_bp
+from app.controllers.conversation_controller import conversation_bp
+from app.controllers.message_controller import message_bp
 
 from app import models
+import app.sockets.socket_events
 
 def create_app():
     app = Flask(__name__)
@@ -39,6 +43,7 @@ def create_app():
     init_db(app)
     init_jwt(app)
     init_cloudinary(app)
+    init_socketIO(app)
 
     # Register blueprints
     app.register_blueprint(auth_bp)
@@ -51,6 +56,8 @@ def create_app():
     app.register_blueprint(progress_bp)
     app.register_blueprint(chapter_bp)
     app.register_blueprint(user_bp)
+    app.register_blueprint(conversation_bp)
+    app.register_blueprint(message_bp)
 
     # Global error handler
     @app.errorhandler(Exception)

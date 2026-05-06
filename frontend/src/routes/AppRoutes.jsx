@@ -14,6 +14,7 @@ import QuizPage from "../pages/learnCourse/QuizPage"
 import QuestionDetail from "../pages/learnCourse/QuestionDetail";
 import CourseManagePage from "../pages/courseManage/CourseManagePage";
 import CourseContentPage from "../pages/courseManage/CourseContentPage";
+import Messages from "../pages/message/Messages";
 import Profile from '../pages/profile/Profile';
 import { useAuth } from "../context/AuthContext";
 
@@ -35,6 +36,7 @@ export default function AppRoutes() {
           <Route path="/" element={<Home />} />
           <Route path="/search" element={<SearchCourse />} />
           <Route path="/courses/:id" element={<DetailCourse />} />
+          <Route path="/messages" element={<PrivateRoute><Messages /></PrivateRoute>} />
           <Route path="/cart" element={<PrivateRoute><Cart /></PrivateRoute>} />
           <Route path="/my-courses" element={<PrivateRoute><MyCourses /></PrivateRoute>} />
           <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />

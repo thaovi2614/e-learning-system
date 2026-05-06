@@ -8,6 +8,14 @@ export const getMyCourses = (params) => {
     return api.get("/courses/my-courses", { params });
 };
 
+export const getCoursesByCategory = (categoryId, excludeId) => {
+    return api.get(`/courses/by-category/${categoryId}`, {
+        params: {
+            exclude_id: excludeId
+        }
+    });
+};
+
 export const getCoursesManage = () => {
     return api.get("/courses/manage");
 };

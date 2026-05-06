@@ -1,0 +1,265 @@
+/* ===== CHATBOX WRAPPER ===== */
+.chatbox {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: #e8eaf0;
+}
+
+/* ===== MESSAGES AREA ===== */
+.chatbox .chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* ===== SCROLLBAR ẨN ===== */
+.chatbox .chat-messages::-webkit-scrollbar { width: 4px; }
+.chatbox .chat-messages::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 4px;
+}
+.chatbox .chat-messages.show-scrollbar::-webkit-scrollbar-thumb {
+  background: #bbb;
+}
+
+/* ===== MESSAGE WRAPPER ===== */
+.chatbox .chat-message-wrapper {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+}
+.chatbox .chat-message-wrapper.me {
+  flex-direction: row-reverse;
+}
+.chatbox .chat-message-wrapper.group-start {
+  margin-top: 12px;
+}
+
+/* ===== AVATAR ===== */
+.chatbox .chat-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  align-self: flex-start;
+}
+.chatbox .chat-avatar-placeholder {
+  width: 32px;
+  flex-shrink: 0;
+}
+
+/* ===== CONTENT ===== */
+.chatbox .chat-content {
+  display: flex;
+  flex-direction: column;
+  max-width: 60%;
+}
+.chatbox .chat-message-wrapper.me .chat-content {
+  align-items: flex-end;
+}
+.chatbox .chat-message-wrapper.other .chat-content {
+  align-items: flex-start;
+}
+
+/* ===== BUBBLE BASE ===== */
+.chatbox .chat-bubble {
+  display: inline-block;
+  padding: 8px 12px;
+  font-size: 14px;
+  line-height: 1.45;
+  word-break: break-word;
+  max-width: 100%;
+  border-radius: 18px;
+}
+
+/* ===== BUBBLE MÀU SẬ C ===== */
+.chatbox .chat-bubble.me {
+  background: #0068ff;
+  color: #fff;
+}
+.chatbox .chat-bubble.other {
+  background: #fff;
+  color: #111;
+}
+
+/* ===== BUBBLE BO GÓC — mình ===== */
+.chatbox .chat-bubble.me.first {
+  border-radius: 18px 18px 4px 18px;
+}
+.chatbox .chat-bubble.me.middle {
+  border-radius: 18px 4px 4px 18px;
+}
+.chatbox .chat-bubble.me.last {
+  border-radius: 18px 4px 18px 18px;
+}
+
+/* ===== BUBBLE BO GÓC — người khác ===== */
+.chatbox .chat-bubble.other.first {
+  border-radius: 18px 18px 18px 4px;
+}
+.chatbox .chat-bubble.other.middle {
+  border-radius: 4px 18px 18px 4px;
+}
+.chatbox .chat-bubble.other.last {
+  border-radius: 4px 18px 18px 18px;
+}
+
+/* ===== BUBBLE CHỆ CÓ ẢNH ===== */
+.chatbox .chat-bubble.image-only {
+  padding: 3px;
+  background: transparent !important;
+  border-radius: 12px !important;
+}
+
+/* ===== ẢNH TRONG BUBBLE ===== */
+.chatbox .chat-image {
+  max-width: 220px;
+  max-height: 260px;
+  border-radius: 10px;
+  display: block;
+  cursor: pointer;
+  object-fit: cover;
+  margin-bottom: 2px;
+}
+
+/* ===== TIME ===== */
+.chatbox .chat-time {
+  font-size: 11px;
+  color: #8e8e93;
+  margin-top: 4px;
+  padding: 0 4px 4px;
+}
+
+/* ===== TYPING ===== */
+.chatbox .chat-typing {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 4px;
+  padding-left: 35px;
+  margin-top: 4px;
+}
+.chatbox .typing-bubble {
+  background: #fff;
+  border-radius: 18px;
+  padding: 10px 14px;
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+.chatbox .typing-bubble span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #aaa;
+  animation: bounce 1.2s infinite ease-in-out;
+}
+.chatbox .typing-bubble span:nth-child(2) { animation-delay: 0.2s; }
+.chatbox .typing-bubble span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes bounce {
+  0%, 80%, 100% { transform: translateY(0); }
+  40%           { transform: translateY(-5px); }
+}
+
+/* ===== IMAGE PREVIEW ===== */
+.chatbox .image-preview {
+  position: relative;
+  padding: 8px 14px;
+  background: #fff;
+  border-top: 1px solid #eee;
+  display: inline-flex;
+  flex-shrink: 0;
+}
+.chatbox .image-preview img {
+  height: 80px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+.chatbox .remove-preview {
+  position: absolute;
+  top: 4px;
+  right: 10px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0, 0, 0, 0.5);
+  color: #fff;
+  font-size: 11px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+/* ===== INPUT AREA ===== */
+.chatbox .chat-input {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-top: 1px solid #dde0e6;
+  background: #fff;
+  flex-shrink: 0;
+}
+
+/* Nút upload ảnh */
+.chatbox .upload-image-btn {
+  font-size: 20px;
+  cursor: pointer;
+  flex-shrink: 0;
+  line-height: 1;
+  user-select: none;
+  opacity: 0.6;
+  transition: opacity 0.15s;
+}
+.chatbox .upload-image-btn:hover {
+  opacity: 1;
+}
+
+.chatbox .chat-input input {
+  flex: 1;
+  padding: 9px 16px;
+  border: none;
+  border-radius: 20px;
+  background: #f0f2f5;
+  font-size: 14px;
+  outline: none;
+  color: #111;
+}
+.chatbox .chat-input input::placeholder { color: #aaa; }
+.chatbox .chat-input input:disabled { opacity: 0.6; }
+
+.chatbox .chat-input button {
+  width: 38px;
+  height: 38px;
+  border: none;
+  border-radius: 50%;
+  background: #0068ff;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s;
+  font-size: 13px;
+  font-weight: 600;
+}
+.chatbox .chat-input button:hover:not(:disabled) { background: #0057d4; }
+.chatbox .chat-input button:disabled {
+  background: #aac4f0;
+  cursor: not-allowed;
+}
+.chatbox .chat-input button img {
+  width: 18px;
+  height: 18px;
+  filter: invert(1);
+}

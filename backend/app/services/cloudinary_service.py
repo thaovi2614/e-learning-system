@@ -104,3 +104,22 @@ def delete_file(public_id):
         except Exception as e:
             print("Delete file error:", str(e))
             return None
+
+
+def upload_message_image(file, conversation_id):
+    try:
+        result = cloudinary.uploader.upload(
+            file,
+            folder=f"elearning/conversation/{conversation_id}",
+            transformation=[
+                {"width": 1000, "crop": "limit"}, 
+                {"quality": "auto"},
+                {"fetch_format": "auto"}
+            ]
+        )
+
+        return result.get("secure_url")
+
+    except Exception as e:
+        print("Upload message image error:", str(e))
+        return None
