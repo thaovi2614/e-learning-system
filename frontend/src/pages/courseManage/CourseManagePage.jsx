@@ -22,6 +22,7 @@ export default function CourseManagePage() {
     thumbnailFile: null,
     category_id: "",
     active: true,
+    level: "beginner",
   });
 
   const loadCourses = async () => {
@@ -160,6 +161,7 @@ export default function CourseManagePage() {
       formData.append("category_id", form.category_id);
       formData.append("description", form.description);
       formData.append("active", form.active);
+      formData.append("level", form.level);
 
       if (form.thumbnailFile) {
         formData.append("thumbnail", form.thumbnailFile);
@@ -194,6 +196,7 @@ export default function CourseManagePage() {
       thumbnail: course.thumbnail || "",
       category_id: course.category_id || "",
       active: course.active ?? true,
+      level: course.level || "beginner",
     });
   };
 
@@ -385,6 +388,17 @@ export default function CourseManagePage() {
                 <option value="BAT_BUOC">Bắt buộc</option>
               </select>
 
+              <select
+                style={input}
+                name="level"
+                value={form.level}
+                onChange={handleChange}
+              >
+                <option value="beginner">Beginner</option>
+                <option value="intermediate">Intermediate</option>
+                <option value="advanced">Advanced</option>
+              </select>
+
               <input
                 style={input}
                 name="price"
@@ -422,7 +436,7 @@ export default function CourseManagePage() {
                 <option value="false">Tạm ẩn</option>
               </select>
             </div>
-            
+
             <div className="mb-3">
               <div className="d-flex align-items-center gap-3">
                 <label htmlFor="formFile" className="form-label mb-0">Thumbnail:</label>
@@ -712,7 +726,7 @@ const input = {
 
 const row = {
   display: "grid",
-  gridTemplateColumns: "1fr 1fr",
+  gridTemplateColumns: "1fr 1fr 1fr",
   gap: 12,
 };
 

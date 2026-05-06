@@ -11,14 +11,17 @@ from app.models.user import User
 from app.models.answer import Answer
 from datetime import datetime
 from werkzeug.utils import secure_filename
+
 import cloudinary.uploader
+import app.services.recommendation_service as RecommendationService
+
 
 course_bp = Blueprint("course", __name__, url_prefix="/api/courses")
 
 # --- PHẦN QUẢN LÝ KHÓA HỌC (COURSE) ---
 
 @course_bp.route("/manage", methods=["GET"])
-@role_required("INSTRUCTOR")
+
 def get_manage_courses():
     try:
         user_id = int(get_jwt_identity())
@@ -317,6 +320,7 @@ def delete_answer(ans_id):
         db.session.rollback()
         return jsonify({"message": str(e)}), 400
 
+
 @course_bp.route('/answers/<int:ans_id>/correct', methods=['PUT'])
 @jwt_required()
 @role_required("INSTRUCTOR")
@@ -332,3 +336,23 @@ def mark_correct_answer(ans_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({"message": str(e)}), 400
+
+# @course_bp.route("/recommend", methods=["GET"])
+# @jwt_required(optional=True)
+# def recommend():
+#     user_id = get_jwt_identity()
+#     goal = request.args.get("goal")
+
+#     data = RecommendationService.recommend_courses(user_id, goal)
+
+#     return jsonify(data), 200
+@course_bp.route("/recommend", methods=["GET"])
+@jwt_required(optional=True)
+def recommend():
+    user_id = get_jwt_identity()
+    if user_id:
+        user_id = int(user_id)  # ✅ convert sang int
+    goal = request.args.get("goal")
+    data = RecommendationService.recommend_courses(user_id, goal)
+    return jsonify(data), 200
+

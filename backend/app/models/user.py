@@ -13,6 +13,8 @@ class User(db.Model):
     role = db.Column(SqlEnum(UserRole), nullable=False, default=UserRole.STUDENT)
     avatar = db.Column(db.String(500))
     active = db.Column(db.Boolean, default=True, nullable=False)
+    level = db.Column(db.String(50), nullable=True)
+    learning_goal = db.Column(db.String(100), nullable=True)
 
     messages = db.relationship("Message", backref="sender", lazy=True)
     enrollments = db.relationship("Enrollment", backref="user", lazy=True)
@@ -24,7 +26,9 @@ class User(db.Model):
             "username": self.username,
             "email": self.email,
             "role": self.role.name,
-            "avatar": self.avatar
+            "avatar": self.avatar,
+            "level": self.level,
+            "learning_goal": self.learning_goal
         }
     
     def set_password(self, password):

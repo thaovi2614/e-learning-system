@@ -118,6 +118,7 @@ def add_course(data, file, user_id):
     type_str = data.get("type")
     price = data.get("price")
     description = data.get("description")
+    level = data.get("level", "beginner")
 
     thumbnail_url = None
     if file:
@@ -156,7 +157,8 @@ def add_course(data, file, user_id):
         description = description,
         thumbnail = thumbnail_url,
         instructor_id = instructor.id,
-        category_id = category.id
+        category_id = category.id,
+        level=level
     )
 
     db.session.add(new_course)
@@ -223,6 +225,7 @@ def update_course(data, file, user_id, course_id):
     subtitle = data.get("subtitle", "").strip()
     type_str = data.get("type")
     price = data.get("price")
+    level = data.get("level")
 
     # name
     if name:
@@ -258,6 +261,8 @@ def update_course(data, file, user_id, course_id):
     if "description" in data:
         course.description = data.get("description")
 
+    if level:
+        course.level = level
     # thumbnail
     # if "thumbnail" in data:
     #     course.thumbnail = data.get("thumbnail")

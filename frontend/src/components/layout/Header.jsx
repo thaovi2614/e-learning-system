@@ -57,9 +57,14 @@ export default function Header() {
       onClick: () => navigate("/my-courses"),
     },
 
-    ["INSTRUCTOR", "ADMIN"].includes(user?.role) && {
+    user?.role === "INSTRUCTOR" && {
       label: "Quản lý khóa học",
       onClick: () => navigate("/manage-course"),
+    },
+
+    user?.role === "ADMIN" && {
+      label: "Quản lý danh mục",
+      onClick: () => navigate("/admin/categories"),
     },
 
     { label: "Đăng xuất", onClick: logout, danger: true },
@@ -94,6 +99,23 @@ export default function Header() {
         </div>
 
 
+        <div>
+          <button
+            type="button"
+            className="recommend-nav-btn"
+            onClick={() => {
+              if (!user) {
+                alert("Vui lòng đăng nhập để xem gợi ý khóa học");
+                navigate("/login", { state: { from: "/recommendations" } });
+                return;
+              }
+
+              navigate("/recommendations");
+            }}
+          >
+            Gợi ý
+          </button>
+        </div>
         <div className="header-right">
           <BadgeIcon
             icon={messageIcon}

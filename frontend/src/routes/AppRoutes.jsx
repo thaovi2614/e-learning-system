@@ -16,7 +16,10 @@ import CourseManagePage from "../pages/courseManage/CourseManagePage";
 import CourseContentPage from "../pages/courseManage/CourseContentPage";
 import Messages from "../pages/message/Messages";
 import Profile from '../pages/profile/Profile';
+import RecommendedCourses from "../pages/recommendation/RecommendedCourses";
 import { useAuth } from "../context/AuthContext";
+import AdminCategory from "../pages/categoryPage/AdminCategory";
+
 
 function PrivateRoute({ children, roles }) {
   const { user } = useAuth();
@@ -39,8 +42,16 @@ export default function AppRoutes() {
           <Route path="/messages" element={<PrivateRoute><Messages /></PrivateRoute>} />
           <Route path="/cart" element={<PrivateRoute><Cart /></PrivateRoute>} />
           <Route path="/my-courses" element={<PrivateRoute><MyCourses /></PrivateRoute>} />
+          <Route
+            path="/admin/categories"
+            element={
+              <PrivateRoute roles={["ADMIN"]}>
+                <AdminCategory />
+              </PrivateRoute>
+            }
+          />
           <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
-          
+
           <Route path="/learn/:id" element={<PrivateRoute><LearnCourse /></PrivateRoute>}>
             <Route path="lesson/:lessonId" element={<LessonViewer />} />
             <Route path="forum" element={null} />
@@ -50,6 +61,7 @@ export default function AppRoutes() {
 
           <Route path="/manage-course" element={<PrivateRoute roles={["INSTRUCTOR", "ADMIN"]}><CourseManagePage /></PrivateRoute>} />
           <Route path="/manage-course-content/:courseId" element={<PrivateRoute roles={["INSTRUCTOR", "ADMIN"]}><CourseContentPage /></PrivateRoute>} />
+          <Route path="/recommendations" element={<PrivateRoute><RecommendedCourses /></PrivateRoute>} />
           <Route path="/*" element={<CategoryPage />} />
         </Route>
       </Routes>
