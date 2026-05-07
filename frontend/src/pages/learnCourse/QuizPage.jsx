@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { getQuizById, submitQuiz } from "../../services/quizApi";
+import { toast } from "react-toastify";
 
 export default function QuizPage() {
   const { quizId } = useParams();
@@ -42,12 +43,12 @@ export default function QuizPage() {
     try {
       await submitQuiz(quizId, answers);
 
-      alert("Nộp bài thành công!");
+      toast.success("Nộp bài thành công")
 
       navigate(`/learn/${quiz.course_id}`);
     } catch (err) {
       console.error(err);
-      alert("Nộp bài thất bại!");
+      toast.error("Nộp bài thất bại!");
     }
   };
 

@@ -2,8 +2,9 @@ import { useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useCart } from "../../context/CartContext";
-import { createPayment } from "../../services/paymentApi";
+import { checkoutCart } from "../../services/paymentApi";
 import "./cart.css";
+import { toast } from "react-toastify";
 
 export default function Cart() {
     const { user } = useAuth();
@@ -16,7 +17,7 @@ export default function Cart() {
         const resultCode = params.get("resultCode");
         if (!resultCode || hasHandledPayment.current) return;
 
-        hasHandledPayment.current = true; // 👈 đánh dấu đã xử lý
+        hasHandledPayment.current = true;
 
         if (resultCode === "0") {
             clearCart();
@@ -34,20 +35,25 @@ export default function Cart() {
 
     const handleCheckout = async () => {
         try {
-            const res = await createPayment();
-
+            const res = await checkoutCart();
             const data = res.data;
 
             if (!data.payUrl) {
-                // toast.error("Không tạo được link thanh toán");
+                toast.error("Không tạo được link thanh toán");
                 return;
             }
 
-            // 🚀 redirect sang MoMo
             window.location.href = data.payUrl;
 
         } catch (err) {
-            console.error(err);
+            const status = err.response?.status;
+            const message = err.response?.data?.message;
+
+            if (status === 400 && message?.includes("Đã mua")) {
+                toast.warning("Giỏ hàng có khóa học bạn đã mua rồi, vui lòng kiểm tra lại");
+            } else {
+                toast.error(message || "Có lỗi xảy ra khi thanh toán");
+            }
         }
     };
     

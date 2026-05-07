@@ -37,7 +37,9 @@ export default function CourseList({
                     <div className="course-content">
                         <h3>{courses[0].name}</h3>
                         <p>{courses[0].subtitle}</p>
-                        <p>{formattedPrice(courses[0].price)}</p>
+                        <p>
+                            {courses[0].price !== 0 ? formattedPrice(courses[0].price) : "Miễn phí"}
+                        </p>
                     </div>
                 </div>
             )}
@@ -59,7 +61,9 @@ export default function CourseList({
                             <div className="course-content">
                                 <h3>{c.name}</h3>
                                 <p>{c.subtitle}</p>
-                                <p>{formattedPrice(c.price)}</p>
+                                <p>
+                                    {c.price !== 0 ? formattedPrice(c.price) : "Miễn phí"}
+                                </p>
                             </div>
                         </div>
                     );

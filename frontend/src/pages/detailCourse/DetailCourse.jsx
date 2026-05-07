@@ -1,16 +1,20 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { getCourseById, getCoursesByCategory } from "../../services/courseApi";
+import { checkEnrollment, createEnrollment } from "../../services/enrollmentApi";
 import { createOrGetConversation } from "../../services/conversationApi";
+import { createMomoPayment } from "../../services/paymentApi";
 import "./detailCourse.css";
 import { useCart } from "../../context/CartContext";
 import { useAuth } from "../../context/AuthContext";
+import { toast } from "react-toastify";
 
 export default function DetailCourse() {
     const { id } = useParams();
     const { user } = useAuth();
     const { addToCart } = useCart();
     const [course, setCourse] = useState(null);
+    const [isEnroll, setIsEnroll] = useState(false);
     const [relatedCourses, setRelatedCourses] = useState([]);
     const [openChapter, setOpenChapter] = useState(null);
     const [relatedIndex, setRelatedIndex] = useState(0);
@@ -31,6 +35,11 @@ export default function DetailCourse() {
                 );
 
                 setRelatedCourses(relatedRes.data.data.slice(0, 6));
+            }
+
+            if (user) {
+                const enrollRes = await checkEnrollment(courseData.id);
+                setIsEnroll(enrollRes.data.enrolled);
             }
         };
 
@@ -56,6 +65,7 @@ export default function DetailCourse() {
             navigate("/login", {
                 state: { from: location.pathname }
             });
+            toast.info("Bạn cần đăng nhập trước")
             return;
         }
 
@@ -77,10 +87,52 @@ export default function DetailCourse() {
             navigate("/login", {
                 state: { from: location.pathname }
             });
+            toast.info("Bạn cần đăng nhập trước")
             return;
         }
 
         addToCart(course.id);
+    }
+
+    async function handleBuyNow() {
+        if (!user) {
+            navigate("/login", { state: { from: location.pathname } });
+            toast.info("Bạn cần đăng nhập trước");
+            return;
+        }
+        try {
+            const res = await createMomoPayment([course.id]);
+            if (res.data.payUrl) {
+                window.location.href = res.data.payUrl;
+            }
+        } catch (err) {
+            toast.error(err.response?.data?.message || "Không thể tạo thanh toán");
+        }
+    }
+
+    async function handleEnroll() {
+        if (!user) {
+            navigate("/login", {
+                state: { from: location.pathname }
+            });
+            toast.info("Bạn cần đăng nhập trước");
+            return;
+        }
+
+        try {
+            const res = await createEnrollment(id);
+            if (res.data.success) {
+                toast.success("Đăng ký khóa học thành công!");
+                setIsEnroll(true);
+            }
+        } catch (err) {
+            const msg = err.response?.data?.error;
+            if (err.response?.status === 409) {
+                toast.warning(msg || "Bạn đã đăng ký khóa học này rồi");
+            } else {
+                toast.error(msg || "Đăng ký thất bại");
+            }
+        }
     }
 
     function formatPrice(price) {
@@ -219,15 +271,34 @@ export default function DetailCourse() {
                 {/* RIGHT */}
                 <div className="right">
                     <img src={course.thumbnail} alt="" />
+                    {course.price !== 0 ? 
+                        <h3>{formatPrice(course.price)}</h3>
+                    : 
+                        <h3>Miễn phí</h3>
+                    }
+                    
 
-                    <h3>{formatPrice(course.price)}</h3>
+                    {isEnroll ? (
+                        <button className="enrolled-btn" disabled>
+                            ✅ Đã đăng ký
+                        </button>
+                    ) : (
+                        <>
+                            {course.price !== 0 ? 
+                                <>
+                                    <button onClick={handleAddToCart}>Thêm giỏ hàng</button>
+                                    <button onClick={handleBuyNow}>Mua ngay</button>
+                                </>
+                            : 
+                                <>
+                                    <button onClick={handleEnroll}>Đăng ký ngay</button>
+                                </>
+                            }
+                            
+                        </>
+                    )}
 
-                    <button onClick={handleAddToCart}>Thêm giỏ hàng</button>
-                    <button>Mua ngay</button>
-                    <button
-                        className="contact-btn"
-                        onClick={handleContactInstructor}
-                    >
+                    <button className="contact-btn" onClick={handleContactInstructor}>
                         💬 Liên hệ giảng viên
                     </button>
                 </div>

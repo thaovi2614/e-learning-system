@@ -1,6 +1,20 @@
-export default function BadgeIcon({ icon, count, onClick }) {
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify"
+
+export default function BadgeIcon({ icon, count, onClick, user }) {
+    const navigate = useNavigate();
+
+    const handleClick = () => {
+        if (!user) {
+            navigate("/login");
+            toast.info("Bạn cần đăng nhập trước")
+            return;
+        }
+        onClick?.()
+    }
+
     return (
-        <div style={{ position: "relative", display: "inline-block", cursor: "pointer" }} onClick={onClick}>
+        <div style={{ position: "relative", display: "inline-block", cursor: "pointer" }} onClick={handleClick}>
             <img src={icon} alt="" style={{ width: 24, height: 24, filter: "invert(1)" }}/>
             {count >= 0 && (
                 <span

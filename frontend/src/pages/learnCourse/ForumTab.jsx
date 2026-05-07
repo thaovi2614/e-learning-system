@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext"; 
+import { toast } from "react-toastify";
+import Swal from "sweetalert2";
 
 export default function ForumTab({ courseId }) {
     const { user } = useAuth();
@@ -40,22 +42,32 @@ export default function ForumTab({ courseId }) {
             
             setContent("");
             setFile(null); 
-            alert("Đã đăng thành công");
+            toast.success("Đã đăng thành công");
             fetchQuestions();
         } catch (err) {
-            alert("Không thể đăng câu hỏi!");
+            toast.error("Không thể đăng câu hỏi!");
         }
     };
 
     const handleDelete = async (qId) => {
-        if (!window.confirm("Bạn có chắc muốn xóa câu hỏi này?")) return;
+        const result = await Swal.fire({
+            title: "Bạn có chắc muốn xóa câu hỏi này?",
+            text: "Hành động này không thể hoàn tác",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Xóa",
+            cancelButtonText: "Hủy",
+            confirmButtonColor: "#e11d48",
+        })
+        if(!result.isConfirmed) return;
+
         try {
             await axios.delete(`http://localhost:5000/api/courses/questions/${qId}`, {
                 withCredentials: true
             });
             fetchQuestions();
         } catch (err) {
-            alert("Lỗi khi xóa! Bạn không có quyền.");
+            toast.error("Lỗi khi xóa! Bạn không có quyền.");
         }
     };
 

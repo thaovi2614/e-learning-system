@@ -15,17 +15,13 @@ export default function Home() {
 
     async function fetchData(p = 1, shouldScroll = false) {
         const res = await getCourses({ page: p, size: 5 });
-
         setCourses(res.data.items);
         setTotalPages(res.data.total_pages);
         setPage(p);
 
         if (shouldScroll) {
             setTimeout(() => {
-                listRef.current?.scrollIntoView({
-                    behavior: "smooth",
-                    block: "start"
-                });
+                listRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
             }, 100);
         }
     }
@@ -41,44 +37,59 @@ export default function Home() {
         }).format(price);
     }
 
+    const highlight = courses[0];
+
     return (
         <div className="home-container">
-            {/* 🔥 Khóa học nổi bật */}
-            <h1 className="section-title">Các khóa học nổi bật</h1>
 
-            {courses[0] && (
+            {/* ===== HERO ===== */}
+            {highlight && (
                 <div
-                    className="course-card highlight"
-                    onClick={() => navigate(`/courses/${courses[0].id}`)}
+                    className="home-hero"
+                    onClick={() => navigate(`/courses/${highlight.id}`)}
                 >
-                    <div className="thumbnail">
-                        <img src={courses[0].thumbnail} alt="" />
-                    </div>
-
-                    <div className="course-content">
-                        <h3>{courses[0].name}</h3>
-                        <p>{courses[0].subtitle}</p>
-                        <p>{formattedPrice(courses[0].price)}</p>
+                    <img
+                        className="home-hero-img"
+                        src={highlight.thumbnail}
+                        alt=""
+                    />
+                    <div className="home-hero-overlay" />
+                    <div className="home-hero-content">
+                        <span className="home-hero-badge">⭐ Nổi bật</span>
+                        <h2 className="home-hero-title">{highlight.name}</h2>
+                        <p className="home-hero-subtitle">{highlight.subtitle}</p>
+                        <div className="home-hero-footer">
+                            <span className="home-hero-price">
+                                {highlight.price === 0 ? "Miễn phí" : formattedPrice(highlight.price)}
+                            </span>
+                            <button className="home-hero-btn">Xem ngay →</button>
+                        </div>
                     </div>
                 </div>
             )}
 
-            {/* 🔥 Danh sách */}
-            <h1 className="section-title" ref={listRef}>
-                Tất cả các khóa học
-            </h1>
+            {/* ===== COURSE LIST ===== */}
+            <div ref={listRef}>
+                <div className="section-header">
+                    <h2 className="section-title">Tất cả khóa học</h2>
+                </div>
 
-            <CourseList
-                courses={courses}
-                onClick={(id) => navigate(`/courses/${id}`)}
-            />
+                <CourseList
+                    courses={courses}
+                    onClick={(id) => navigate(`/courses/${id}`)}
+                />
+            </div>
 
-            {/* 🔥 Pagination */}
-            <Pagination
-                page={page}
-                totalPages={totalPages}
-                onPageChange={(p) => fetchData(p, true)}
-            />
+            {/* ===== PAGINATION ===== */}
+            {totalPages > 1 && (
+                <div className="home-pagination">
+                    <Pagination
+                        page={page}
+                        totalPages={totalPages}
+                        onPageChange={(p) => fetchData(p, true)}
+                    />
+                </div>
+            )}
         </div>
     );
 }

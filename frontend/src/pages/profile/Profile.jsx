@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { getProfile, changePassword, updateAvatar } from '../../services/userApi';
 import { AuthContext } from '../../context/AuthContext';
 import './Profile.css';
+import { toast } from 'react-toastify';
 
 const Profile = () => {
     const [user, setUser] = useState(null);
@@ -25,7 +26,7 @@ const Profile = () => {
         } catch (err) {
             console.error("Lỗi lấy thông tin profile:", err);
             if (err.response?.status === 401) {
-                alert("Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.");
+                toast.error("Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.");
                 navigate('/login');
             }
         } finally {
@@ -40,9 +41,9 @@ const Profile = () => {
         try {
             const res = await updateAvatar(formData);
             setUser({ ...user, avatar: res.data.avatar_url });
-            alert("Cập nhật ảnh đại diện thành công!");
+            toast.success("Cập nhật ảnh đại diện thành công!");
         } catch (err) {
-            alert("Lỗi cập nhật ảnh: " + (err.response?.data?.message || "Lỗi hệ thống"));
+            toast.error("Lỗi cập nhật ảnh: " + (err.response?.data?.message || "Lỗi hệ thống"));
         }
     };
 
@@ -50,10 +51,10 @@ const Profile = () => {
         e.preventDefault();
         try {
             await changePassword(passwords);
-            alert("Đổi mật khẩu thành công!");
+            toast.success("Đổi mật khẩu thành công!");
             setPasswords({ old_password: '', new_password: '' });
         } catch (err) {
-            alert(err.response?.data?.message || "Mật khẩu cũ không chính xác");
+            toast.error(err.response?.data?.message || "Mật khẩu cũ không chính xác");
         }
     };
 

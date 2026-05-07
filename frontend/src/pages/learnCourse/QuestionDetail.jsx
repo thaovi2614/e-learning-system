@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
+import { toast } from "react-toastify";
+import Swal from "sweetalert2";
 
 export default function QuestionDetail() {
     const { user } = useAuth();
@@ -58,7 +60,7 @@ export default function QuestionDetail() {
         try {
             await axios.put(`http://localhost:5000/api/courses/answers/${ansId}/correct`, {}, { withCredentials: true });
             await loadData();
-        } catch (err) { alert("Lỗi khi đánh dấu"); }
+        } catch (err) { toast.error("Lỗi khi đánh dấu"); }
     };
 
     const handleSendReply = async () => {
@@ -79,9 +81,9 @@ export default function QuestionDetail() {
             setReplyToId(null);
             if(fileInputRef.current) fileInputRef.current.value = ""; 
             
-            alert("Đăng thành công"); 
+            toast.success("Đăng thành công"); 
             await loadData();
-        } catch (err) { alert("Lỗi khi gửi phản hồi"); }
+        } catch (err) { toast.error("Lỗi khi gửi phản hồi"); }
     };
 
     const handleUpdateQuestion = async () => {
@@ -96,21 +98,31 @@ export default function QuestionDetail() {
             });
             
             setIsEditingQuestion(false);
-            alert("Đã lưu thành công"); 
+            toast.success("Đã lưu thành công"); 
             await loadData();
-        } catch (err) { alert("Lỗi cập nhật câu hỏi"); 
-            alert("Lỗi từ Backend: " + (err.response?.data?.message || err.message)); 
+        } catch (err) { toast.error("Lỗi cập nhật câu hỏi"); 
+            toast.error("Lỗi từ Backend: " + (err.response?.data?.message || err.message)); 
             console.error("Chi tiết lỗi:", err);
         }
     };
 
     const handleDeleteQuestion = async () => {
-        if (!window.confirm("Xác nhận xóa câu hỏi này?")) return;
+        const result = await Swal.fire({
+            title: "Xác nhận xóa câu hỏi này?",
+            text: "Hành động này không thể hoàn tác",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Xóa",
+            cancelButtonText: "Hủy",
+            confirmButtonColor: "#e11d48",
+        })
+        if(!result.isConfirmed) return;
+
         try {
             await axios.delete(`http://localhost:5000/api/courses/questions/${questionId}`, { withCredentials: true });
-            alert("Đã xóa thành công"); 
+            toast.success("Đã xóa thành công"); 
             navigate(`/learn/${id}/forum`);
-        } catch (err) { alert("Lỗi khi xóa"); }
+        } catch (err) { toast.error("Lỗi khi xóa"); }
     };
 
     const handleUpdateAns = async (ansId) => {
@@ -127,10 +139,10 @@ export default function QuestionDetail() {
             
             setEditingAnsId(null);
             setEditAnsFile(null);
-            alert("Đã lưu thành công"); 
+            toast.success("Đã lưu thành công"); 
             await loadData();
         } catch (err) { 
-            alert("Lỗi từ Backend: " + (err.response?.data?.message || err.message)); 
+            toast.error("Lỗi từ Backend: " + (err.response?.data?.message || err.message)); 
             console.error("Chi tiết lỗi:", err);
         }
     };
@@ -139,9 +151,9 @@ export default function QuestionDetail() {
         if (!window.confirm("Xác nhận xóa phản hồi này?")) return;
         try {
             await axios.delete(`http://localhost:5000/api/courses/answers/${ansId}`, { withCredentials: true });
-            alert("Đã xóa thành công"); 
+            toast.success("Đã xóa thành công"); 
             await loadData();
-        } catch (err) { alert("Lỗi khi xóa"); }
+        } catch (err) { toast.error("Lỗi khi xóa"); }
     };
 
     const renderAnswerTree = (parentId = null, level = 0) => {

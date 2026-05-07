@@ -9,12 +9,20 @@ payment_bp = Blueprint("payment", __name__, url_prefix="/api/payments")
 @jwt_required()
 def create_momo():
     user_id = get_jwt_identity()
+    data = request.get_json() or {}
 
-    key = f"cart_{user_id}"
-    cart = session.get(key, [])
-    
-    res, code = PaymentService.create_payment(user_id, cart)
-    
+    # Luồng mua ngay — truyền course_ids trực tiếp
+    course_ids = data.get("course_ids")
+
+    # Luồng giỏ hàng — lấy từ session
+    if not course_ids:
+        key = f"cart_{user_id}"
+        course_ids = session.get(key, [])
+
+    if not course_ids:
+        return jsonify({"message": "Không có khóa học nào"}), 400
+
+    res, code = PaymentService.create_payment(user_id, course_ids)
     return jsonify(res), code
 
 

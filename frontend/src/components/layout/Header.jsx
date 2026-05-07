@@ -121,12 +121,14 @@ export default function Header() {
             icon={messageIcon}
             count={unreadCount}
             onClick={() => navigate("/messages")}
+            user={user}
           />
 
           <BadgeIcon
             icon={cartIcon}
             count={cartCount}
             onClick={() => navigate("/cart")}
+            user={user}
           />
 
           {!user ? (

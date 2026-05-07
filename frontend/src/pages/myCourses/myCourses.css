@@ -127,3 +127,21 @@
     border-radius: 20px;
     font-weight: 500;
 }
+
+/* BADGE TRẠNG THÁI */
+.my-courses-container .badge.done {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.my-courses-container .badge.in-progress {
+    background: #fff8e1;
+    color: #f57f17;
+}
+
+/* PERCENT */
+.my-courses-container .percent {
+    font-size: 13px;
+    color: #666;
+    font-weight: 500;
+}

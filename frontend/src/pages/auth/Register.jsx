@@ -9,6 +9,7 @@ import studentIcon from "../../assets/student.png"
 import instructorIcon from "../../assets/instructor.png"
 import "../auth/auth.css"
 import { useAuth } from "../../context/AuthContext";
+import { toast } from "react-toastify"; 
 
 export default function Register() {
     const { register } = useAuth()
@@ -71,8 +72,9 @@ export default function Register() {
 
         if (res.success) {
             navigate("/");
+            toast.success("Đăng ký thành công");
         } else {
-            console.log(res.message);
+            toast.error(res.message);
         }
     }
     

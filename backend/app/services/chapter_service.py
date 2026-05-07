@@ -86,6 +86,9 @@ def delete_chapter(user_id, course_id, chapter_id):
 
     chapter.active = False
 
+    for lesson in chapter.lessons:
+        lesson.active = False
+
     chapters = Chapter.query.filter_by(
         course_id=course_id,
         active=True

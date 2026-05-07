@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { getCourseById } from "../../services/courseApi";
-import { createChapter, removeChapter } from "../../services/chapterApi"
+import { createChapter, removeChapter } from "../../services/chapterApi";
 import { createLesson, updateLesson, deleteLesson as deleteLessonApi } from "../../services/lessonApi";
-import ForumTab from "../learnCourse/ForumTab"
+import ForumTab from "../learnCourse/ForumTab";
+import { toast } from "react-toastify";
+import Swal from "sweetalert2";
 
 export default function CourseContentPage() {
   const { courseId } = useParams();
@@ -52,7 +54,7 @@ export default function CourseContentPage() {
       }
 
     } catch (error) {
-      alert("Không tải được khóa học");
+      toast.error("Không tải được khóa học");
     }
   };
 
@@ -73,7 +75,7 @@ export default function CourseContentPage() {
   const addChapter = async () => {
     try {
       if (!chapterForm.title.trim()) {
-        alert("Tên chương không được để trống");
+        toast.warning("Tên chương không được để trống");
         return;
       }
 
@@ -85,18 +87,28 @@ export default function CourseContentPage() {
         return updated.sort((a, b) => a.order_index - b.order_index);
       });
 
-      alert("Thêm chương thành công");
+      toast.success("Thêm chương thành công");
 
       setChapterForm({ title: "" });
       setShowChapterForm(false);
 
     } catch (error) {
-      alert(error.response?.data?.message || "Không thêm được chương");
+      toast.error(error.response?.data?.message || "Không thêm được chương");
     }
   };
 
   const deleteChapter = async (id) => {
-    if (!window.confirm("Xác nhận xoá chương này?")) return;
+    const result = await Swal.fire({
+      title: "Xác nhận xóa chương này?",
+      text: "Hành động này không thể hoàn tác",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Xóa",
+      cancelButtonText: "Hủy",
+      confirmButtonColor: "#e11d48",
+    })
+
+    if (!result.isConfirmed) return;
 
     try {
       await removeChapter(courseId, id);
@@ -120,10 +132,10 @@ export default function CourseContentPage() {
         setLessons([]);
       }
 
-      alert("Đã xoá chương");
+      toast.success("Đã xoá chương");
 
     } catch (error) {
-      alert(error.response?.data?.message || "Xóa chương thất bại");
+      toast.error(error.response?.data?.message || "Xóa chương thất bại");
     }
   };
 
@@ -152,23 +164,23 @@ export default function CourseContentPage() {
   const addLesson = async () => {
     try {
       if (!selectedChapter) {
-        alert("Chọn chương trước khi thêm nội dung");
+        toast.warning("Chọn chương trước khi thêm nội dung");
         return;
       }
 
       if (!lessonForm.title.trim()) {
-        alert("Tên nội dung không được để trống");
+        toast.warning("Tên nội dung không được để trống");
         return;
       }
 
       if (activeTab === "QUIZ") {
         if (!lessonForm.timeLimit || lessonForm.timeLimit <= 0) {
-          alert("Thời gian thi phải lớn hơn 0");
+          toast.warning("Thời gian thi phải lớn hơn 0");
           return;
         }
 
         if (!lessonForm.passScore || lessonForm.passScore < 0 || lessonForm.passScore > 10) {
-          alert("Điểm pass không hợp lệ");
+          toast.warning("Điểm pass không hợp lệ");
           return;
         }
       }
@@ -198,7 +210,7 @@ export default function CourseContentPage() {
           return updated.sort((a, b) => a.order_index - b.order_index);
         });
 
-        alert("Cập nhật nội dung thành công");
+        toast.success("Cập nhật nội dung thành công");
       } else {
         const res = await createLesson(selectedChapter.id, formData);
         const newLesson = res.data.data;
@@ -208,18 +220,28 @@ export default function CourseContentPage() {
           return updated.sort((a, b) => a.order_index - b.order_index);
         });
 
-        alert("Thêm nội dung thành công");
+        toast.success("Thêm nội dung thành công");
       }
 
       resetLessonForm();
 
     } catch (error) {
-      alert(error.response?.data?.message || "Có lỗi xảy ra");
+      toast.error(error.response?.data?.message || "Có lỗi xảy ra");
     }
   };
 
   const deleteLesson = async (id) => {
-    if (!window.confirm("Xác nhận xoá nội dung này?")) return;
+    const result = await Swal.fire({
+      title: "Xác nhận xoá nội dung này?",
+      text: "Hành động này không thể hoàn tác",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Xóa",
+      cancelButtonText: "Hủy",
+      confirmButtonColor: "#e11d48",
+    })
+
+    if (!result.isConfirmed) return;
 
     try {
       await deleteLessonApi(id);
@@ -242,10 +264,10 @@ export default function CourseContentPage() {
 
       setSelectedLessonId(null);
 
-      alert("Đã xoá nội dung");
+      toast.success("Đã xoá nội dung");
 
     } catch (error) {
-      alert(error.response?.data?.message || "Xóa nội dung thất bại");
+      toast.error(error.response?.data?.message || "Xóa nội dung thất bại");
     }
   };
 
@@ -280,7 +302,7 @@ export default function CourseContentPage() {
     const url = buildLessonUrl(lesson);
 
     if (!url) {
-      alert("Nội dung này chưa có link hoặc file");
+      toast.info("Nội dung này chưa có link hoặc file");
       return;
     }
 

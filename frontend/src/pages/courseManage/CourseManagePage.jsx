@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getCoursesManage, createCourse, updateCourse, deleteCourse } from "../../services/courseApi";
 import { getCategories } from "../../services/categoryApi";
+import { toast } from "react-toastify";
 
 export default function CourseManagePage() {
   const navigate = useNavigate();
@@ -30,7 +31,7 @@ export default function CourseManagePage() {
       const res = await getCoursesManage();
       setCourses(res.data.items || []);
     } catch (error) {
-      alert(error.response?.data?.message || "Không tải được khóa học");
+      toast.error(error.response?.data?.message || "Không tải được khóa học");
     }
   };
 
@@ -122,35 +123,24 @@ export default function CourseManagePage() {
   const submit = async () => {
     try {
       if (!form.name.trim()) {
-        alert("Tên khóa học không được để trống");
+        toast.warning("Tên khóa học không được để trống");
         return;
       }
 
       if (!form.subtitle.trim()) {
-        alert("Subtitle không được để trống");
+        toast.warning("Subtitle không được để trống");
         return;
       }
 
       if (!form.price) {
-        alert("Giá không được để trống");
+        toast.warning("Giá không được để trống");
         return;
       }
 
       if (!form.category_id) {
-        alert("Vui lòng chọn danh mục");
+        toast.warning("Vui lòng chọn danh mục");
         return;
       }
-
-      // const payload = {
-      //   name: form.name,
-      //   subtitle: form.subtitle,
-      //   type: form.type,
-      //   price: Number(form.price),
-      //   category_id: Number(form.category_id),
-      //   description: form.description,
-      //   thumbnail: form.thumbnail,
-      //   active: form.active,
-      // };
 
       const formData = new FormData();
 
@@ -169,16 +159,16 @@ export default function CourseManagePage() {
 
       if (editingId) {
         await updateCourse(editingId, formData);
-        alert("Cập nhật khóa học thành công");
+        toast.success("Cập nhật khóa học thành công");
       } else {
         await createCourse(formData);
-        alert("Tạo khóa học thành công");
+        toast.success("Tạo khóa học thành công");
       }
 
       resetForm();
       loadCourses();
     } catch (error) {
-      alert(error.response?.data?.message || "Có lỗi xảy ra");
+      toast.error(error.response?.data?.message || "Có lỗi xảy ra");
     }
   };
 
@@ -200,15 +190,15 @@ export default function CourseManagePage() {
     });
   };
 
-  const deleteCourse = async (id) => {
+  const handleDeleteCourse = async (id) => {
     if (!window.confirm("Xác nhận xóa khóa học này?")) return;
 
     try {
       await deleteCourse(id);
-      alert("Đã xóa khóa học");
+      toast.success("Đã xóa khóa học");
       loadCourses();
     } catch (error) {
-      alert(error.response?.data?.message || "Xóa thất bại");
+      toast.error(error.response?.data?.message || "Xóa thất bại");
     }
   };
 

@@ -6,6 +6,7 @@ import eyeIcon from "../../assets/eye.png"
 import eyeOffIcon from "../../assets/eye-off.png"
 import "../auth/auth.css"
 import { useAuth } from "../../context/AuthContext";
+import { toast } from "react-toastify";
 
 export default function Login() {
     const { login } = useAuth();
@@ -48,8 +49,9 @@ export default function Login() {
         const res = await login(form);
         if (res.success) {
             navigate(from);
+            toast.success("Đăng nhập thành công");
         } else {
-            alert(res.message);
+            toast.error(res.message);
         }
     };
     

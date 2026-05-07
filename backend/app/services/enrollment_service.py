@@ -59,3 +59,27 @@ def add_enrollment(user_id, courses):
         raise
 
     return enrollments
+
+def add_single_enrollment(user_id, course_id):
+    course = Course.query.get(course_id)
+    if not course:
+        raise ValueError("Khóa học không tồn tại")
+
+    existed = Enrollment.query.filter_by(
+        user_id=user_id,
+        course_id=course_id
+    ).first()
+
+    if existed:
+        raise ValueError("Bạn đã đăng ký khóa học này rồi")
+
+    enrollment = Enrollment(user_id=user_id, course_id=course_id)
+
+    try:
+        db.session.add(enrollment)
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        raise
+
+    return enrollment
