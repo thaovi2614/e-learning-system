@@ -22,6 +22,7 @@ course_bp = Blueprint("course", __name__, url_prefix="/api/courses")
 
 @course_bp.route("/manage", methods=["GET"])
 
+@role_required("INSTRUCTOR")
 def get_manage_courses():
     try:
         user_id = int(get_jwt_identity())

@@ -228,15 +228,75 @@ def get_career_recommendations(user, courses):
     return map_ai_result(ai_recs, top_candidates)[:3]
 
 
-def get_history_recommendations(user, courses, enrolled_ids):
-    """
-    History recommendation chỉ dùng rule-based để tránh tốn quota Gemini.
-    """
+# def get_history_recommendations(user, courses, enrolled_ids):
+#     """
+#     History recommendation chỉ dùng rule-based để tránh tốn quota Gemini.
+#     """
+#     if not enrolled_ids:
+#         return []
+
+#     learned_courses = Course.query.filter(Course.id.in_(enrolled_ids)).all()
+
+#     learned_category_ids = [c.category_id for c in learned_courses]
+
+#     learned_keywords = []
+#     for c in learned_courses:
+#         learned_keywords.extend(get_course_text(c).split())
+
+#     scored_courses = []
+
+#     for course in courses:
+#         score = 0
+#         reasons = []
+#         course_text = get_course_text(course)
+
+#         if course.category_id in learned_category_ids:
+#             score += 4
+#             reasons.append("Liên quan đến danh mục khóa đã học")
+
+#         matched_keywords = [
+#             keyword for keyword in learned_keywords
+#             if len(keyword) > 3 and keyword in course_text
+#         ]
+
+#         if matched_keywords:
+#             score += 2
+#             reasons.append("Có nội dung liên quan khóa đã học")
+
+#         if user.level and course.level:
+#             if user.level.lower() == course.level.lower():
+#                 score += 1
+#                 reasons.append("Phù hợp trình độ hiện tại")
+
+#         if score > 0:
+#             scored_courses.append({
+#                 "course": course,
+#                 "score": score,
+#                 "rule_reasons": reasons,
+#             })
+
+#     scored_courses.sort(key=lambda x: x["score"], reverse=True)
+
+#     history_recommendations = [
+#         {
+#             **item["course"].to_dict(),
+#             "score": item["score"],
+#             "rule_reasons": item["rule_reasons"],
+#             "ai_reason": (
+#                 "Khóa học này liên quan đến những nội dung bạn đã học trước đó "
+#                 "và giúp bạn mở rộng kỹ năng theo lộ trình hiện tại."
+#             ),
+#         }
+#         for item in scored_courses[:3]
+#     ]
+
+#     return history_recommendations
+
+def get_history_recommendations(user, courses, enrolled_ids): # Thêm AI cho History 
     if not enrolled_ids:
         return []
 
     learned_courses = Course.query.filter(Course.id.in_(enrolled_ids)).all()
-
     learned_category_ids = [c.category_id for c in learned_courses]
 
     learned_keywords = []
@@ -258,7 +318,6 @@ def get_history_recommendations(user, courses, enrolled_ids):
             keyword for keyword in learned_keywords
             if len(keyword) > 3 and keyword in course_text
         ]
-
         if matched_keywords:
             score += 2
             reasons.append("Có nội dung liên quan khóa đã học")
@@ -277,20 +336,11 @@ def get_history_recommendations(user, courses, enrolled_ids):
 
     scored_courses.sort(key=lambda x: x["score"], reverse=True)
 
-    history_recommendations = [
-        {
-            **item["course"].to_dict(),
-            "score": item["score"],
-            "rule_reasons": item["rule_reasons"],
-            "ai_reason": (
-                "Khóa học này liên quan đến những nội dung bạn đã học trước đó "
-                "và giúp bạn mở rộng kỹ năng theo lộ trình hiện tại."
-            ),
-        }
-        for item in scored_courses[:3]
-    ]
-
-    return history_recommendations
+    # ✅ Thêm AI vào đây — giống career
+    top_candidates = scored_courses[:10]
+    candidate_data = build_candidate_data(top_candidates)
+    ai_recs = ai_pick_top_courses(user, candidate_data)
+    return map_ai_result(ai_recs, top_candidates)[:3]
 
 
 def recommend_courses(user_id=None, goal=None):
