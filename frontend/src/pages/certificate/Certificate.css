@@ -1,0 +1,332 @@
+.cert-page {
+  max-width: 1180px;
+  margin: 36px auto;
+  padding: 0 20px;
+}
+
+.cert-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 22px;
+}
+
+.cert-actions button {
+  border: 1px solid #0b2342;
+  background: white;
+  padding: 12px 18px;
+  border-radius: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.cert-actions .download-btn {
+  background: #d6a94a;
+  border-color: #d6a94a;
+  color: #071d38;
+}
+
+.certificate-card {
+  width: 100%;
+  aspect-ratio: 1.414 / 1;
+  background: #071d38;
+  padding: 14px;
+  overflow: hidden;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.22);
+}
+
+.cert-inner {
+  position: relative;
+  height: 100%;
+  background:
+    radial-gradient(circle at center, rgba(255,255,255,0.95), rgba(255,250,235,0.96)),
+    repeating-linear-gradient(
+      135deg,
+      rgba(214, 169, 74, 0.06) 0,
+      rgba(214, 169, 74, 0.06) 1px,
+      transparent 1px,
+      transparent 12px
+    );
+  border: 4px solid #d6a94a;
+  padding: 44px 80px 34px;
+  text-align: center;
+  overflow: hidden;
+}
+
+.cert-inner::before {
+  content: "";
+  position: absolute;
+  inset: 22px;
+  border: 1.5px solid rgba(214, 169, 74, 0.75);
+  pointer-events: none;
+}
+
+.side-ribbon {
+  position: absolute;
+  top: -30px;
+  width: 150px;
+  height: 115%;
+  background: linear-gradient(145deg, #071d38, #0e315d);
+  border-left: 10px solid #d6a94a;
+  border-right: 4px solid #d6a94a;
+  opacity: 0.98;
+}
+
+.left-ribbon {
+  left: -92px;
+  transform: rotate(-12deg);
+}
+
+.right-ribbon {
+  right: -92px;
+  transform: rotate(12deg);
+}
+
+.corner {
+  position: absolute;
+  color: #c79a3a;
+  font-size: 42px;
+  z-index: 2;
+}
+
+.corner-left-top {
+  top: 22px;
+  left: 34px;
+}
+
+.corner-right-top {
+  top: 22px;
+  right: 34px;
+  transform: scaleX(-1);
+}
+
+.corner-left-bottom {
+  bottom: 18px;
+  left: 34px;
+  transform: scaleY(-1);
+}
+
+.corner-right-bottom {
+  bottom: 18px;
+  right: 34px;
+  transform: scale(-1);
+}
+
+.cert-emblem {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+.emblem-circle {
+  width: 62px;
+  height: 62px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #ffe7a8, #c9952f);
+  border: 5px solid #f7d889;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  box-shadow: 0 6px 16px rgba(101, 72, 10, 0.25);
+}
+
+.cert-title {
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 78px;
+  letter-spacing: 12px;
+  color: #071d38;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.cert-subtitle {
+  margin: 8px 0 18px;
+  font-family: Georgia, "Times New Roman", serif;
+  letter-spacing: 9px;
+  color: #b6882e;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.gold-line {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 18px;
+  color: #071d38;
+  font-size: 16px;
+  letter-spacing: 3px;
+  font-weight: 800;
+  margin-bottom: 28px;
+}
+
+.gold-line span {
+  width: 95px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #d6a94a, transparent);
+}
+
+.cert-text {
+  color: #536173;
+  font-size: 17px;
+  margin: 10px 0;
+  font-weight: 600;
+}
+
+.student-name {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 54px;
+  color: #071d38;
+  font-style: normal;
+  font-weight: 500;
+  letter-spacing: 8px;
+  text-transform: uppercase;
+  margin: 8px 0 12px;
+}
+
+.course-name {
+  margin: 8px 0 26px;
+  color: #071d38;
+  font-family: Georgia, "Times New Roman", serif;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-size: 32px;
+}
+
+.cert-meta {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 32px;
+  margin: 0 auto 28px;
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+}
+
+.meta-icon {
+  width: 42px;
+  height: 42px;
+  border: 2px solid #d6a94a;
+  color: #d6a94a;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+
+.meta-item p {
+  margin: 0 0 4px;
+  color: #071d38;
+  text-transform: uppercase;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+}
+
+.meta-item strong {
+  color: #071d38;
+  font-size: 17px;
+}
+
+.meta-divider {
+  width: 1px;
+  height: 54px;
+  background: #d6a94a;
+  opacity: 0.8;
+}
+
+.cert-bottom {
+  width: 72%;
+  margin: 18px auto 0;
+  display: grid;
+  grid-template-columns: 1fr 110px 1fr;
+  align-items: end;
+  gap: 28px;
+}
+
+.signature span {
+  display: block;
+  font-family: "Brush Script MT", "Segoe Script", cursive;
+  font-size: 28px;
+  color: #071d38;
+  margin-bottom: 4px;
+}
+
+.signature div {
+  height: 1px;
+  background: #a87c27;
+  margin-bottom: 8px;
+}
+
+.signature p {
+  margin: 0;
+  color: #071d38;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 800;
+}
+
+.seal {
+  width: 92px;
+  height: 92px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #0c2a4f 35%, #d6a94a 36%, #d6a94a 52%, #0c2a4f 53%);
+  border: 6px solid #d6a94a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto -4px;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
+}
+
+.seal-inner {
+  color: #f7d889;
+  font-size: 34px;
+}
+
+.cert-loading,
+.cert-empty {
+  text-align: center;
+  margin-top: 100px;
+}
+
+.cert-empty button {
+  margin-top: 18px;
+  padding: 12px 18px;
+  border-radius: 10px;
+  border: none;
+  background: #ffc400;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+@media (max-width: 900px) {
+  .cert-inner {
+    padding: 34px 42px;
+  }
+
+  .cert-title {
+    font-size: 48px;
+    letter-spacing: 7px;
+  }
+
+  .student-name {
+    font-size: 38px;
+  }
+
+  .course-name {
+    font-size: 24px;
+  }
+
+  .cert-bottom {
+    width: 88%;
+  }
+}

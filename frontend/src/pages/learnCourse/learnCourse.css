@@ -215,3 +215,24 @@
     margin-top: 10px;
     background: #fafafa;
 }
+.certificate-notice {
+  margin: 18px 0;
+  padding: 16px 20px;
+  border-radius: 14px;
+  background: #fff8dc;
+  border: 1px solid #ffc400;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 700;
+}
+
+.certificate-notice button {
+  background: #20242a;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-weight: 700;
+  cursor: pointer;
+}

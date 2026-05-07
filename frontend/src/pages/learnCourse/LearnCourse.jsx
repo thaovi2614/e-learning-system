@@ -7,7 +7,7 @@ import { getProgress, getProgressDetail } from "../../services/lessonProgressApi
 import "./learnCourse.css";
 
 export default function LearnCourse() {
-    const { id, questionId } = useParams(); 
+    const { id, questionId } = useParams();
     const [tab, setTab] = useState("lesson");
     const [progressMap, setProgressMap] = useState({});
     const [progressPercent, setProgressPercent] = useState(0);
@@ -42,13 +42,14 @@ export default function LearnCourse() {
             <button className="btn" onClick={() => navigate("/my-courses")}>← Khóa học</button>
 
             <div className="tabs">
-                <button 
+                <button
                     className={tab === "lesson" ? "active" : ""}
                     onClick={() => { setTab("lesson"); navigate(`/learn/${id}`); }}
                 >
                     Bài học
                 </button>
-                <button 
+
+                <button
                     className={tab === "forum" ? "active" : ""}
                     onClick={() => { setTab("forum"); navigate(`/learn/${id}/forum`); }}
                 >
@@ -56,12 +57,22 @@ export default function LearnCourse() {
                 </button>
             </div>
 
+            {progressPercent >= 100 && (
+                <div className="certificate-notice">
+                    <span>🎉 Bạn đã hoàn thành khóa học này.</span>
+
+                    <button onClick={() => navigate(`/certificate/${id}`)}>
+                        Xem chứng nhận
+                    </button>
+                </div>
+            )}
+
             <div className="tab-content">
                 {tab === "lesson" && (
                     <div className="learn-layout">
                         <div className="learn-sidebar">
-                            <LessonTab 
-                                courseId={id} 
+                            <LessonTab
+                                courseId={id}
                                 progressMap={progressMap}
                                 progressPercent={progressPercent}
                                 setProgressPercent={setProgressPercent}

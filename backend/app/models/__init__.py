@@ -15,3 +15,4 @@ from .quiz import Quiz
 from .slide_lesson import SlideLesson
 from .user import User
 from .video_lesson import VideoLesson
+from .certificate import Certificate

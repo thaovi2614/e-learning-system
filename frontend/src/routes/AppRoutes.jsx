@@ -19,6 +19,7 @@ import Profile from '../pages/profile/Profile';
 import RecommendedCourses from "../pages/recommendation/RecommendedCourses";
 import { useAuth } from "../context/AuthContext";
 import AdminCategory from "../pages/categoryPage/AdminCategory";
+import CertificatePage from "../pages/certificate/CertificatePage";
 
 
 function PrivateRoute({ children, roles }) {
@@ -42,6 +43,7 @@ export default function AppRoutes() {
           <Route path="/messages" element={<PrivateRoute><Messages /></PrivateRoute>} />
           <Route path="/cart" element={<PrivateRoute><Cart /></PrivateRoute>} />
           <Route path="/my-courses" element={<PrivateRoute><MyCourses /></PrivateRoute>} />
+          <Route path="/certificate/:courseId" element={<PrivateRoute><CertificatePage /></PrivateRoute>} />
           <Route
             path="/admin/categories"
             element={
@@ -57,7 +59,7 @@ export default function AppRoutes() {
             <Route path="forum" element={null} />
             <Route path="forum/:questionId" element={null} />
           </Route>
-          <Route path="/quiz/:quizId" element={<PrivateRoute><QuizPage /></PrivateRoute>}/>
+          <Route path="/quiz/:quizId" element={<PrivateRoute><QuizPage /></PrivateRoute>} />
 
           <Route path="/manage-course" element={<PrivateRoute roles={["INSTRUCTOR", "ADMIN"]}><CourseManagePage /></PrivateRoute>} />
           <Route path="/manage-course-content/:courseId" element={<PrivateRoute roles={["INSTRUCTOR", "ADMIN"]}><CourseContentPage /></PrivateRoute>} />
