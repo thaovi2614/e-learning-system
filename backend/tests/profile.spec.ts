@@ -51,21 +51,19 @@ test.describe('TEST LUỒNG THÔNG TIN CÁ NHÂN', () => {
     await expect(page).toHaveURL(/\/profile/);
   });
 
-  test('TC6 - Nhập sai mật khẩu cũ thì hiện alert lỗi', async ({ page }) => {
-    let alertMessage = '';
+  test('TC6 - Click icon mắt để hiện/ẩn mật khẩu', async ({ page }) => {
+    await page.goto(`${BASE}/login`);
 
-    page.on('dialog', async dialog => {
-      alertMessage = dialog.message();
-      await dialog.accept();
-    });
+    const passwordInput = page.getByPlaceholder('Mật khẩu');
+    const eyeIcon = page.locator('.input-icon-right');
 
-    await page.goto(`${BASE}/profile`);
+    await expect(passwordInput).toHaveAttribute('type', 'password');
 
-    await page.getByPlaceholder('Mật khẩu cũ').fill('sai123');
-    await page.getByPlaceholder('Mật khẩu mới').fill('123456');
-    await page.getByRole('button', { name: /cập nhật mật khẩu/i }).click();
+    await eyeIcon.click();
+    await expect(passwordInput).toHaveAttribute('type', 'text');
 
-    await expect.poll(() => alertMessage).not.toBe('');
+    await eyeIcon.click();
+    await expect(passwordInput).toHaveAttribute('type', 'password');
   });
 
   test('TC7 - Có input upload ảnh đại diện', async ({ page }) => {

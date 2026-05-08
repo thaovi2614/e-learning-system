@@ -3,14 +3,16 @@ import { test, expect, Page } from '@playwright/test';
 const BASE = 'http://localhost:5173';
 const COURSE_ID = 1; // Thay bằng ID khóa học thực tế có trong DB
 
-async function loginStudent(page: Page) {
-    await page.goto(`${BASE}/login`);
-    await page.locator('input[name="username"]').fill('u1');
-    await page.locator('input[name="password"]').fill('1234');
-    await page.getByRole('button', { name: /đăng nhập/i }).click();
-    await expect(page).not.toHaveURL(/\/login/, { timeout: 5000 });
-}
+async function loginUser(page: Page) {
+  await page.goto(`${BASE}/login`);
 
+  await page.getByPlaceholder('Tên đăng nhập').fill('u1');
+  await page.getByPlaceholder('Mật khẩu').fill('1234');
+
+  await page.getByRole('button', { name: /đăng nhập/i }).click();
+
+  await expect(page).not.toHaveURL(/\/login/, { timeout: 10000 });
+}
 test.describe('Trang Chi Tiết Khóa Học (DetailCourse)', () => {
 
     // ─────────────────────────────────────────────
@@ -71,9 +73,7 @@ test.describe('Trang Chi Tiết Khóa Học (DetailCourse)', () => {
         await expect(page).toHaveURL(/\/login/, { timeout: 5000 });
 
         // Đăng nhập
-        await page.locator('input[name="username"]').fill('u1');
-        await page.locator('input[name="password"]').fill('1234');
-        await page.getByRole('button', { name: /đăng nhập/i }).click();
+        await loginUser(page);
 
         // Phải redirect về trang chi tiết khóa học
         await expect(page).toHaveURL(`${BASE}/courses/${COURSE_ID}`, { timeout: 5000 });
@@ -83,7 +83,7 @@ test.describe('Trang Chi Tiết Khóa Học (DetailCourse)', () => {
     // TC5: Đã đăng nhập bấm "Thêm giỏ hàng" thành công
     // ─────────────────────────────────────────────
     test('TC5 - Đã đăng nhập bấm Thêm giỏ hàng thêm vào giỏ', async ({ page }) => {
-        await loginStudent(page);
+        await loginUser(page);
         await page.goto(`${BASE}/courses/${COURSE_ID}`);
         await page.waitForTimeout(2000);
 
@@ -102,17 +102,37 @@ test.describe('Trang Chi Tiết Khóa Học (DetailCourse)', () => {
     // TC6: Số lượng giỏ hàng tăng sau khi thêm
     // ─────────────────────────────────────────────
     test('TC6 - Badge giỏ hàng hiển thị số lượng trên navbar', async ({ page }) => {
-        await loginStudent(page);
+        await loginUser(page);
+
         await page.goto(`${BASE}/courses/${COURSE_ID}`);
-        await page.waitForTimeout(2000);
+        await page.waitForTimeout(1500);
 
-        // Badge là span nằm trong div header-right, dùng inline style
-        const badge = page.locator('div.header-right span');
-        await expect(badge).toBeVisible({ timeout: 5000 });
+        const addCartBtn = page.getByRole('button', { name: /thêm giỏ hàng/i });
 
-        const badgeText = await badge.innerText();
-        const count = parseInt(badgeText) || 0;
-        expect(count).toBeGreaterThanOrEqual(0);
+        if (!(await addCartBtn.isVisible().catch(() => false))) {
+            test.skip(true, 'Khóa học miễn phí hoặc đã đăng ký nên không có nút Thêm giỏ hàng');
+            return;
+        }
+
+        await addCartBtn.click();
+        await page.waitForTimeout(1000);
+
+        const badges = page.locator('.header-right span');
+        const count = await badges.count();
+
+        let foundCartBadge = false;
+
+        for (let i = 0; i < count; i++) {
+            const text = (await badges.nth(i).innerText()).trim();
+            const number = Number(text);
+
+            if (!Number.isNaN(number) && number > 0) {
+                foundCartBadge = true;
+                break;
+            }
+        }
+
+        expect(foundCartBadge).toBeTruthy();
     });
     // ─────────────────────────────────────────────
     // TC7: Tên và subtitle khóa học hiển thị đúng

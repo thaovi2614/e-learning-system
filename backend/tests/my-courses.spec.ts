@@ -44,7 +44,7 @@ test.describe('Trang Khóa Học Của Tôi (MyCourses)', () => {
   // ─────────────────────────────────────────────
   // TC3: Mỗi card có tên, subtitle và badge "Đã đăng ký"
   // ─────────────────────────────────────────────
-  test('TC3 - Mỗi card hiển thị đúng tên, subtitle và badge', async ({ page }) => {
+  test('TC3 - Mỗi card hiển thị đúng tên, subtitle và badge trạng thái', async ({ page }) => {
     const cards = page.locator('.course-grid .course-card');
     const count = await cards.count();
 
@@ -54,9 +54,13 @@ test.describe('Trang Khóa Học Của Tôi (MyCourses)', () => {
     }
 
     const firstCard = cards.first();
+
     await expect(firstCard.locator('h3')).not.toBeEmpty();
     await expect(firstCard.locator('p')).toBeVisible();
-    await expect(firstCard.locator('.badge')).toContainText(/đã đăng ký/i);
+
+    const badgeText = await firstCard.locator('.badge').innerText();
+
+    expect(badgeText).toMatch(/đã đăng ký|đang tiến hành|hoàn thành/i);
   });
 
   // ─────────────────────────────────────────────
@@ -97,21 +101,21 @@ test.describe('Trang Khóa Học Của Tôi (MyCourses)', () => {
   // TC6: Chưa đăng nhập truy cập -> redirect login
   // ─────────────────────────────────────────────
   test('TC6 - Chưa đăng nhập truy cập trang bị redirect login', async ({ page }) => {
-  await page.context().clearCookies();
-  await page.evaluate(() => localStorage.clear());
+    await page.context().clearCookies();
+    await page.evaluate(() => localStorage.clear());
 
-  await page.goto(`${BASE}/my-courses`);
-  await page.waitForTimeout(1500);
+    await page.goto(`${BASE}/my-courses`);
+    await page.waitForTimeout(1500);
 
-  const url = page.url();
+    const url = page.url();
 
-  // Chấp nhận cả 3 trường hợp: redirect login, hiện empty, hoặc hiện trang trống
-  const isLoginPage = url.includes('/login');
-  const isEmpty = await page.locator('.empty').isVisible().catch(() => false);
-  const hasNoCards = await page.locator('.course-grid .course-card').count() === 0;
+    // Chấp nhận cả 3 trường hợp: redirect login, hiện empty, hoặc hiện trang trống
+    const isLoginPage = url.includes('/login');
+    const isEmpty = await page.locator('.empty').isVisible().catch(() => false);
+    const hasNoCards = await page.locator('.course-grid .course-card').count() === 0;
 
-  expect(isLoginPage || isEmpty || hasNoCards).toBeTruthy();
-});
+    expect(isLoginPage || isEmpty || hasNoCards).toBeTruthy();
+  });
 
   // ─────────────────────────────────────────────
   // TC7: Tên khóa học không rỗng

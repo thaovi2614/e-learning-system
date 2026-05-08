@@ -27,7 +27,7 @@ export default function AdminCategory() {
   }, []);
 
   const filteredCategories = categories.filter(c =>
-      c.name.toLowerCase().includes(keyword.toLowerCase())
+    c.name.toLowerCase().includes(keyword.toLowerCase())
   );
 
   function resetForm() {
@@ -41,21 +41,29 @@ export default function AdminCategory() {
   async function handleSubmit(e) {
     e.preventDefault();
 
-    const payload = {
-      name: form.name,
-      parent_id: form.parent_id ? Number(form.parent_id) : null,
-    };
+    try {
+      const payload = {
+        name: form.name,
+        parent_id: form.parent_id
+          ? Number(form.parent_id)
+          : null,
+      };
 
-    if (editingId) {
-      await updateCategory(editingId, payload);
-      toast.success("Cập nhật thành công")
-    } else {
-      await addCategory(payload);
-      toast.success("Thêm thành công")
+      if (editingId) {
+        await updateCategory(editingId, payload);
+        toast.success("Cập nhật thành công");
+      } else {
+        await addCategory(payload);
+        toast.success("Thêm thành công");
+      }
+
+      resetForm();
+      await fetchCategories();
+
+    } catch (err) {
+      console.error(err);
+      alert(err?.response?.data?.message || "Có lỗi xảy ra");
     }
-
-    resetForm();
-    fetchCategories();
   }
 
   function handleEdit(category) {
@@ -66,22 +74,28 @@ export default function AdminCategory() {
     });
 
     setTimeout(() => {
-        formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     }, 50);
   }
 
   async function handleToggleActive(category) {
-    await updateCategory(category.id, {
-      active: !category.active,
-    });
+    try {
+      await updateCategory(category.id, {
+        active: !category.active,
+      });
 
-    fetchCategories();
+      await fetchCategories();
+
+    } catch (err) {
+      console.error(err);
+      alert("Không thể cập nhật trạng thái");
+    }
   }
 
   return (
     <div className="admin-category-page">
       <div className="admin-category-hero">
-        
+
         <h1>Quản lý danh mục</h1>
         <span>
           Thêm, chỉnh sửa và bật/tắt danh mục khóa học trong hệ thống.
@@ -147,15 +161,15 @@ export default function AdminCategory() {
           </div>
 
           <div className="category-search">
-              <input
-                  type="text"
-                  placeholder="Tìm kiếm danh mục..."
-                  value={keyword}
-                  onChange={(e) => setKeyword(e.target.value)}
-              />
-              {keyword && (
-                  <button onClick={() => setKeyword("")}>✕</button>
-              )}
+            <input
+              type="text"
+              placeholder="Tìm kiếm danh mục..."
+              value={keyword}
+              onChange={(e) => setKeyword(e.target.value)}
+            />
+            {keyword && (
+              <button onClick={() => setKeyword("")}>✕</button>
+            )}
           </div>
 
           <table>
