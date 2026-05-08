@@ -173,8 +173,7 @@ function CourseCard({ course, type, onView }) {
           <span className={`rec-type-badge ${type}`}>
             {type === "career" ? "Theo mục tiêu" : "Theo lịch sử học"}
           </span>
-
-          <span className="rec-score">Score: {course.score ?? 0}</span>
+       
         </div>
 
         <h3>{course.name}</h3>
