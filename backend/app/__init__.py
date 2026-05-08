@@ -25,6 +25,7 @@ from app.controllers.chapter_controller import chapter_bp
 from app.controllers.user_controller import user_bp
 from app.controllers.conversation_controller import conversation_bp
 from app.controllers.message_controller import message_bp
+from app.controllers.chatbot_controller import chatbot_bp
 
 from app import models
 from app.models.certificate import Certificate
@@ -61,7 +62,7 @@ def create_app():
     app.register_blueprint(user_bp)
     app.register_blueprint(conversation_bp)
     app.register_blueprint(message_bp)
-
+    app.register_blueprint(chatbot_bp, url_prefix='/api/chatbot')
     # Global error handler
     @app.errorhandler(Exception)
     def handle_exception(e):
