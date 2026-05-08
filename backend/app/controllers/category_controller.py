@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
 from app.middlewares.jwt_middleware import role_required
 import app.services.category_service as CategoryService
-import app.services.user_service as UserService
+from app.services.user_service import UserService
 
 category_bp = Blueprint("category", __name__, url_prefix="/api/categories")
 
@@ -33,10 +33,13 @@ def get_categories():
     try:
         verify_jwt_in_request(optional=True)
         user_id = get_jwt_identity()
+        print("user_id:", user_id)
 
         if user_id:
-            user = UserService.find_user_by_id(int(user_id))
-    except:
+            user = UserService.get_user_profile(int(user_id))
+            print("role:", user.role.name)
+    except Exception as e:
+        print("JWT error:", e)
         user = None
 
     is_admin = user and user.role.name == "ADMIN"

@@ -120,7 +120,15 @@
 table {
   width: 100%;
   border-collapse: collapse;
+  table-layout: fixed;
 }
+
+table th:nth-child(1), table td:nth-child(1) { width: 50px; }   /* ID */
+table th:nth-child(2), table td:nth-child(2) { width: 180px; }  /* Tên */
+table th:nth-child(3), table td:nth-child(3) { width: 180px; }  /* Slug */
+table th:nth-child(4), table td:nth-child(4) { width: 150px; }  /* Danh mục cha */
+table th:nth-child(5), table td:nth-child(5) { width: 130px; text-align: center; } /* Trạng thái */
+table th:nth-child(6), table td:nth-child(6) { width: 120px; text-align: center; } /* Thao tác */
 
 thead {
   background: #f9fafb;
@@ -149,6 +157,7 @@ th {
   border-radius: 999px;
   font-size: 13px;
   font-weight: 700;
+  display: inline-block;
 }
 
 .status.active {
@@ -183,4 +192,40 @@ th {
   text-align: center;
   padding: 40px;
   color: #6b7280;
+}
+
+.category-search {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+    position: relative;
+}
+
+.category-search input {
+    flex: 1;
+    height: 40px;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    padding: 0 14px;
+    font-size: 14px;
+    outline: none;
+}
+
+.category-search input:focus {
+    border-color: #2563eb;
+}
+
+.category-search button {
+    position: absolute;
+    right: 10px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #9ca3af;
+    font-size: 14px;
+}
+
+.category-search button:hover {
+    color: #374151;
 }

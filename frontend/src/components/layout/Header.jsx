@@ -8,7 +8,8 @@ import BadgeIcon from "../common/BadgeIcon";
 import cartIcon from "../../assets/cart.png";
 import searchIcon from "../../assets/search.png"
 import messageIcon from "../../assets/messenger.png";
-import "./layout.css"
+import { toast } from "react-toastify";
+import "./layout.css";
 
 export default function Header() {
   const { user, logout } = useAuth();
@@ -105,7 +106,7 @@ export default function Header() {
             className="recommend-nav-btn"
             onClick={() => {
               if (!user) {
-                alert("Vui lòng đăng nhập để xem gợi ý khóa học");
+                toast.info("Vui lòng đăng nhập để xem gợi ý khóa học");
                 navigate("/login", { state: { from: "/recommendations" } });
                 return;
               }

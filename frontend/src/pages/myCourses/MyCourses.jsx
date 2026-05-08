@@ -18,7 +18,6 @@ export default function MyCourses() {
                 items.map(async (c) => {
                     try {
                         const r = await getProgress(c.id);
-                        console.log(c.id, r.data.progress_percent)
                         return [c.id, r.data.progress_percent];
                     } catch {
                         return [c.id, 0];

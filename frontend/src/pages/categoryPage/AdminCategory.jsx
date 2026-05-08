@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   getCategories,
   addCategory,
   updateCategory,
 } from "../../services/categoryApi";
 import "./AdminCategory.css";
+import { toast } from "react-toastify"
 
 export default function AdminCategory() {
   const [categories, setCategories] = useState([]);
@@ -13,6 +14,8 @@ export default function AdminCategory() {
     parent_id: "",
   });
   const [editingId, setEditingId] = useState(null);
+  const [keyword, setKeyword] = useState("");
+  const formRef = useRef(null);
 
   async function fetchCategories() {
     const res = await getCategories();
@@ -22,6 +25,10 @@ export default function AdminCategory() {
   useEffect(() => {
     fetchCategories();
   }, []);
+
+  const filteredCategories = categories.filter(c =>
+      c.name.toLowerCase().includes(keyword.toLowerCase())
+  );
 
   function resetForm() {
     setForm({
@@ -41,8 +48,10 @@ export default function AdminCategory() {
 
     if (editingId) {
       await updateCategory(editingId, payload);
+      toast.success("Cập nhật thành công")
     } else {
       await addCategory(payload);
+      toast.success("Thêm thành công")
     }
 
     resetForm();
@@ -55,6 +64,10 @@ export default function AdminCategory() {
       name: category.name,
       parent_id: category.parent_id || "",
     });
+
+    setTimeout(() => {
+        formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 50);
   }
 
   async function handleToggleActive(category) {
@@ -76,7 +89,7 @@ export default function AdminCategory() {
       </div>
 
       <div className="admin-category-layout">
-        <div className="admin-category-form-card">
+        <div className="admin-category-form-card" ref={formRef}>
           <h2>{editingId ? "Cập nhật danh mục" : "Thêm danh mục mới"}</h2>
 
           <form onSubmit={handleSubmit}>
@@ -133,6 +146,18 @@ export default function AdminCategory() {
             <span>{categories.length} danh mục</span>
           </div>
 
+          <div className="category-search">
+              <input
+                  type="text"
+                  placeholder="Tìm kiếm danh mục..."
+                  value={keyword}
+                  onChange={(e) => setKeyword(e.target.value)}
+              />
+              {keyword && (
+                  <button onClick={() => setKeyword("")}>✕</button>
+              )}
+          </div>
+
           <table>
             <thead>
               <tr>
@@ -146,7 +171,7 @@ export default function AdminCategory() {
             </thead>
 
             <tbody>
-              {categories.map((category) => {
+              {filteredCategories.map((category) => {
                 const parent = categories.find(
                   (c) => c.id === category.parent_id
                 );
