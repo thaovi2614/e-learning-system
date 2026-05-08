@@ -22,6 +22,7 @@ import AdminCategory from "../pages/categoryPage/AdminCategory";
 import CertificatePage from "../pages/certificate/CertificatePage";
 
 
+
 function PrivateRoute({ children, roles }) {
   const { user } = useAuth();
   const location = useLocation();

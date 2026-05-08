@@ -22,7 +22,7 @@ def find_category(data, is_admin=False):
     return query.all()
 
 # =========================
-# 🔥 tìm category theo slug path
+# tìm category theo slug path
 # =========================
 def find_category_by_slug_path(slug_path):
     slugs = slug_path.split("/")
@@ -44,7 +44,7 @@ def find_category_by_slug_path(slug_path):
 
 
 # =========================
-# 🔥 lấy tất cả category con
+# lấy tất cả category con
 # =========================
 def get_all_child_ids(category):
     ids = [category.id]

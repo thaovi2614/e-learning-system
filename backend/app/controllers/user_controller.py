@@ -34,7 +34,7 @@ def change_password():
     if not old_password or not new_password:
         return jsonify({"message": "Vui lòng nhập đầy đủ mật khẩu cũ và mới"}), 400
 
-    # Gọi service xử lý logic đổi mật khẩu qua local import để tránh circular import[cite: 1]
+    # Gọi service xử lý logic đổi mật khẩu qua local import để tránh circular import
     success, message = UserService.update_password(
         user_id, old_password, new_password
     )

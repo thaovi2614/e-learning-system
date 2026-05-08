@@ -5,7 +5,6 @@ import traceback
 from flask import send_from_directory
 import os
 
-
 from app.configs.config import Config
 from app.configs.database_config import init_db
 from app.configs.jwt_config import init_jwt
@@ -26,8 +25,6 @@ from app.controllers.chapter_controller import chapter_bp
 from app.controllers.user_controller import user_bp
 from app.controllers.conversation_controller import conversation_bp
 from app.controllers.message_controller import message_bp
-from app.controllers.certificate_controller import certificate_bp
-
 
 from app import models
 from app.models.certificate import Certificate
@@ -64,7 +61,6 @@ def create_app():
     app.register_blueprint(user_bp)
     app.register_blueprint(conversation_bp)
     app.register_blueprint(message_bp)
-    app.register_blueprint(certificate_bp)
 
     # Global error handler
     @app.errorhandler(Exception)
@@ -75,21 +71,18 @@ def create_app():
                 "message": e.description
             }), e.code
 
+        traceback.print_exc()
+        
         return jsonify({
             "success": False,
             "message": "Internal Server Error"
         }), 500
-    
-    # @app.errorhandler(Exception)
-    # def handle_exception(e):
-    #     traceback.print_exc()
-    #     return jsonify({
-    #         "message": str(e),
-    #         "success": False
-    #     }), 500
+
     BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
     UPLOAD_FOLDER = os.path.join(BASE_DIR, "uploads")
+    
     @app.route("/uploads/<path:filename>")
     def uploaded_file(filename):
         return send_from_directory(UPLOAD_FOLDER, filename)
+        
     return app

@@ -4,6 +4,7 @@ import { CartProvider } from "./context/CartContext";
 import { MessageProvider } from "./context/MessageContext";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import ChatWidget from "./components/ChatWidget/ChatWidget";
 
 function App() {
   return (
@@ -11,6 +12,8 @@ function App() {
       <MessageProvider>
         <CartProvider>
           <AppRoutes />
+          <ChatWidget />
+          
           <ToastContainer
             position="top-right"
             autoClose={3000}

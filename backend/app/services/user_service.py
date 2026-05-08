@@ -11,7 +11,6 @@ class UserService:
 
     @staticmethod
     def update_password(user_id, old_password, new_password):
-        # SỬA LỖI Ở ĐÂY: Import db từ app.configs.database_config thay vì từ app[cite: 4]
         from app.configs.database_config import db
         from app.models.user import User
         
@@ -28,7 +27,6 @@ class UserService:
 
     @staticmethod
     def update_avatar(user_id, file):
-        # SỬA LỖI Ở ĐÂY: Tương tự, import db từ app.configs.database_config[cite: 4]
         from app.configs.database_config import db
         from app.models.user import User
         

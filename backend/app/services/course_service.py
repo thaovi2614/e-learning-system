@@ -63,7 +63,7 @@ def get_courses_by_category(category_id, exclude_id=None, limit=5):
 
 def find_courses(data, is_admin=False):
     name = data.get("name","").strip()
-    slug_path = data.get("category")
+    slug_path = data.get("category") 
 
     page = int(data.get("page", 1))
     size = int(data.get("size", 10))
@@ -75,7 +75,7 @@ def find_courses(data, is_admin=False):
     if name:
         query = query.filter(Course.name.ilike(f"%{name}%"))
 
-    if slug_path:
+    if slug_path and slug_path.strip(): 
         category = CategoryService.find_category_by_slug_path(slug_path)
 
         if not category:
@@ -88,7 +88,6 @@ def find_courses(data, is_admin=False):
             }
 
         ids = CategoryService.get_all_child_ids(category)
-
         query = query.filter(Course.category_id.in_(ids))
 
     pagination = query.paginate(page=page, per_page=size, error_out=False)

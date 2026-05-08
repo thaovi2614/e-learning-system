@@ -4,13 +4,14 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request, jwt_required
 from app.middlewares.jwt_middleware import role_required
 import app.services.course_service as CourseService
-import app.services.user_service as UserService
 from app.configs.database_config import db
 from app.models.question import Question 
 from app.models.user import User
 from app.models.answer import Answer
 from datetime import datetime
 from werkzeug.utils import secure_filename
+from app.services.user_service import UserService
+
 
 import cloudinary.uploader
 import app.services.recommendation_service as RecommendationService
@@ -84,18 +85,25 @@ def get_courses():
         try:
             verify_jwt_in_request(optional=True)
             user_id = get_jwt_identity()
-            user = UserService.find_user_by_id(int(user_id)) if user_id else None
-        except:
+            user = UserService.get_user_profile(int(user_id)) if user_id else None
+        except Exception as jwt_err:
+            print("Lỗi JWT (Có thể bỏ qua nếu là khách):", jwt_err)
             user = None
+            
         is_admin = user and getattr(user, 'role', None) and user.role.name == "ADMIN"
+        
         result = CourseService.find_courses(data, is_admin)
+        
         return jsonify({
             "items": [c.to_dict() for c in result["items"]],
             "page": result["page"], "size": result["size"],
             "total": result["total"], "total_pages": result["total_pages"]
         }), 200
+        
     except Exception as e:
-        return jsonify({"message": str(e)}), 400
+        import traceback
+        traceback.print_exc() # Dòng này sẽ in chi tiết lỗi ra Terminal của Flask
+        return jsonify({"message": f"Chi tiết lỗi Backend: {str(e)}"}), 400
 
 @course_bp.route("", methods=["POST"])
 @role_required("INSTRUCTOR")

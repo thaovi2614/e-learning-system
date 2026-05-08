@@ -24,7 +24,8 @@ def handle_send_message(data):
     image_url = data.get("image_url")
 
     msg = MessageService.create_message(conversation_id, sender_id, content, image_url)
-
+    
+    db.session.refresh(msg)
     user = User.query.get(sender_id)
 
     emit(
@@ -36,7 +37,7 @@ def handle_send_message(data):
             "content": content,
             "image_url": image_url,
             "avatar": user.avatar if user else "",
-            "sentAt": str(msg.sentAt)
+            "sentAt": msg.sentAt.isoformat() if msg.sentAt else None # Dùng isoformat cho chuẩn            
         },
         room=str(conversation_id)
     )
