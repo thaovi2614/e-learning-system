@@ -12,6 +12,7 @@ from app.configs.cloudinary_config import init_cloudinary
 from app.configs.socketIO_config import init_socketIO
 
 
+
 from app.controllers.auth_controller import auth_bp
 from app.controllers.category_controller import category_bp
 from app.controllers.course_controller import course_bp
@@ -26,6 +27,7 @@ from app.controllers.user_controller import user_bp
 from app.controllers.conversation_controller import conversation_bp
 from app.controllers.message_controller import message_bp
 from app.controllers.chatbot_controller import chatbot_bp
+from app.controllers.certificate_controller import certificate_bp
 
 from app import models
 from app.models.certificate import Certificate
@@ -63,6 +65,7 @@ def create_app():
     app.register_blueprint(conversation_bp)
     app.register_blueprint(message_bp)
     app.register_blueprint(chatbot_bp, url_prefix='/api/chatbot')
+    app.register_blueprint(certificate_bp, url_prefix='/api/certificates')
     # Global error handler
     @app.errorhandler(Exception)
     def handle_exception(e):
