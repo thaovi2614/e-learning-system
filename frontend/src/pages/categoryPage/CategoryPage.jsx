@@ -6,6 +6,7 @@ import { getCourses } from "../../services/courseApi";
 import CourseList from "../../components/courseList/CourseList";
 import Pagination from "../../components/paginate/Pagination";
 import "./categoryPage.css";
+import { toast } from 'react-toastify';
 
 export default function CategoryPage() {
     const { "*": slug } = useParams();
@@ -17,13 +18,36 @@ export default function CategoryPage() {
     const [totalPages, setTotalPages] = useState(1);
     const [loading, setLoading] = useState(false);
 
+    // THÊM STATE LỌC GIÁ
+    const [minPrice, setMinPrice] = useState("");
+    const [maxPrice, setMaxPrice] = useState("");
+
     const listRef = useRef(null);
     const navigate = useNavigate();
 
     async function fetchData(p = 1, shouldScroll = false) {
+        // KIỂM TRA ĐIỀU KIỆN NHẬP
+        const min = parseFloat(minPrice);
+        const max = parseFloat(maxPrice);
+        if ((minPrice && min < 0) || (maxPrice && max < 0)) {
+            toast.error("Giá không thể là số âm");
+            return;
+        }
+        if (minPrice && maxPrice && max < min) {
+            toast.error("Giá tối đa phải thấp hơn giá tối thiểu");
+            return;
+        }
+
         setLoading(true);
         try {
-            const res = await getCourses({ category: slug, page: p, size: 5 });
+            // GỬI THÊM min_price VÀ max_price
+            const res = await getCourses({ 
+                category: slug, 
+                page: p, 
+                size: 5,
+                min_price: minPrice,
+                max_price: maxPrice
+            });
             setCourses(res.data.items);
             setTotalCourses(res.data.total);
             setTotalPages(res.data.total_pages);
@@ -40,6 +64,9 @@ export default function CategoryPage() {
     }
 
     useEffect(() => {
+        // RESET GIÁ KHI ĐỔI DANH MỤC
+        setMinPrice("");
+        setMaxPrice("");
         fetchData(1);
         getCategoryBySlug({ slug }).then(res => {
             setCategoryName(res.data.name);
@@ -55,6 +82,32 @@ export default function CategoryPage() {
                 <p className="category-subtitle">
                     {totalCourses} khóa học trong danh mục này
                 </p>
+
+                {/* THÊM GIAO DIỆN LỌC GIÁ */}
+                <div className="category-filter" style={{ marginTop: '20px', display: 'flex', gap: '10px', alignItems: 'center' }}>
+                    <span>Khoảng giá: </span>
+		    <input 
+                        type="number" 
+                        placeholder="Tối thiểu" 
+                        value={minPrice}
+                        onChange={(e) => setMinPrice(e.target.value)}
+                        style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ddd', width: '130px' }}
+                    />
+                    <span>-</span>
+                    <input 
+                        type="number" 
+                        placeholder="Tối đa" 
+                        value={maxPrice}
+                        onChange={(e) => setMaxPrice(e.target.value)}
+                        style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ddd', width: '130px' }}
+                    />
+                    <button 
+                        onClick={() => fetchData(1)}
+                        style={{ padding: '8px 20px', background: '#007bff', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                    >
+                        Lọc
+                    </button>
+                </div>
             </div>
 
             {/* ===== LOADING ===== */}
@@ -69,7 +122,7 @@ export default function CategoryPage() {
                 <div className="category-empty">
                     <span className="category-empty-icon">📚</span>
                     <h3>Chưa có khóa học</h3>
-                    <p>Danh mục này chưa có khóa học nào</p>
+                    <p>Danh mục này chưa có khóa học nào hoặc không tìm thấy trong tầm giá này</p>
                 </div>
             )}
 

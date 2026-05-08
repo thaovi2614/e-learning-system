@@ -4,6 +4,7 @@ import { getCourses } from "../../services/courseApi";
 import CourseList from "../../components/courseList/CourseList";
 import Pagination from "../../components/paginate/Pagination";
 import "./searchCourse.css";
+import { toast } from 'react-toastify';
 
 export default function SearchCourse() {
     const [searchParams] = useSearchParams();
@@ -26,13 +27,13 @@ export default function SearchCourse() {
 
         //  Kiểm tra số âm
         if ((minPrice && min < 0) || (maxPrice && max < 0)) {
-            alert("Giá không được là số âm");
+            toast.error("Giá không được là số âm");
             return;
         }
 
         //  Kiểm tra Tối đa < Tối thiểu
         if (minPrice && maxPrice && max < min) {
-            alert("Giá tối đa phải lớn hơn hoặc bằng giá tối thiểu");
+            toast.error("Giá tối đa phải lớn hơn hoặc bằng giá tối thiểu");
             return;
         }
         setLoading(true);
