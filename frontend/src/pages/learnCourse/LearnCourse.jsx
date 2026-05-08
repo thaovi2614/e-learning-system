@@ -59,7 +59,7 @@ export default function LearnCourse() {
 
             {progressPercent >= 100 && (
                 <div className="certificate-notice">
-                    <span>🎉 Bạn đã hoàn thành khóa học này.</span>
+                    <span>Bạn đã hoàn thành khóa học này.</span>
 
                     <button onClick={() => navigate(`/certificate/${id}`)}>
                         Xem chứng nhận

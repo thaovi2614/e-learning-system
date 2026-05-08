@@ -91,7 +91,7 @@ class ChatbotService:
 
         chat_completion = client.chat.completions.create(
             messages=groq_messages,
-            model="llama-3.3-70b-versatile",
+            model="llama-3.1-8b-instant",
             temperature=0.7,
         )
 

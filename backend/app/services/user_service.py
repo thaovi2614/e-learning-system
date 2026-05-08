@@ -34,7 +34,7 @@ class UserService:
         if not user:
             return None
             
-        user.avatar = CloudinaryService.update_avatar(file, user_id)
+        user.avatar = CloudinaryService.upload_avatar(file, user_id)
         
         db.session.commit()
         return user.avatar
