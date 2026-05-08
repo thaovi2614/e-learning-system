@@ -1,3 +1,5 @@
+from flask import request
+
 from app.models.course import Course
 from app.models.user import User
 from app.models.category import Category
@@ -62,8 +64,10 @@ def get_courses_by_category(category_id, exclude_id=None, limit=5):
     } for c in courses]
 
 def find_courses(data, is_admin=False):
-    name = data.get("name","").strip()
-    slug_path = data.get("category") 
+    name = data.get("name", "").strip()
+    slug_path = data.get("category")
+    min_price = data.get("min_price")
+    max_price = data.get("max_price")
 
     page = int(data.get("page", 1))
     size = int(data.get("size", 10))
@@ -74,6 +78,18 @@ def find_courses(data, is_admin=False):
 
     if name:
         query = query.filter(Course.name.ilike(f"%{name}%"))
+
+    if min_price:
+        try:
+            query = query.filter(Course.price >= float(min_price))
+        except ValueError:
+            pass
+            
+    if max_price:
+        try:
+            query = query.filter(Course.price <= float(max_price))
+        except ValueError:
+            pass
 
     if slug_path and slug_path.strip(): 
         category = CategoryService.find_category_by_slug_path(slug_path)
@@ -165,52 +181,6 @@ def add_course(data, file, user_id):
 
     return new_course
 
-# def update_course(data, user_id, course_id):
-#     course = Course.query.get(course_id)
-
-#     if not course:
-#         raise Exception("Khóa học không tồn tại")
-
-#     if course.instructor_id != user_id:
-#         raise Exception("Bạn không có quyền sửa khóa học này")
-    
-#     name = data.get("name","").strip()
-#     subtitle = data.get("subtitle","").strip()
-#     type_str = data.get("type")
-#     price = data.get("price")
-
-#     if name:
-#         existed = Course.query.filter(
-#             Course.name == name,
-#             Course.instructor_id == user_id,
-#             Course.id != course_id
-#         ).first()
-
-#         if existed:
-#             raise Exception("Bạn đã có khóa học trùng tên")
-
-#         course.name = name
-
-#     if subtitle is not None:
-#         course.subtitle = subtitle
-
-#     if type_str:
-#         try:
-#             course.type = CourseType[type_str]
-#         except KeyError:
-#             raise Exception("Type không hợp lệ")
-
-#     if price is not None:
-#         if float(price) < 0:
-#             raise Exception("Giá phải >= 0")
-#         course.price = price
-
-#     course.description = data.get("description")
-#     course.thumbnail = data.get("thumbnail")
-
-#     db.session.commit()
-
-#     return course
 def update_course(data, file, user_id, course_id):
     course = Course.query.get(course_id)
 
@@ -226,7 +196,6 @@ def update_course(data, file, user_id, course_id):
     price = data.get("price")
     level = data.get("level")
 
-    # name
     if name:
         existed = Course.query.filter(
             Course.name == name,
@@ -239,32 +208,26 @@ def update_course(data, file, user_id, course_id):
 
         course.name = name
 
-    # subtitle
     if "subtitle" in data:
         course.subtitle = subtitle
 
-    # type
     if type_str:
         try:
             course.type = CourseType[type_str]
         except KeyError:
             raise Exception("Type không hợp lệ")
 
-    # price
     if price is not None:
         if float(price) < 0:
             raise Exception("Giá phải >= 0")
         course.price = price
 
-    # description
     if "description" in data:
         course.description = data.get("description")
 
     if level:
         course.level = level
-    # thumbnail
-    # if "thumbnail" in data:
-    #     course.thumbnail = data.get("thumbnail")
+
     thumbnail_url = None
     if file:
         thumbnail_url = CloudinaryService.upload_thumbnail(file, user_id)
@@ -303,7 +266,6 @@ def delete_course(user_id, course_id):
     db.session.commit()
 
     return course
-
 
 def find_instructor_manage_courses(user_id):
     courses = Course.query.filter_by(
