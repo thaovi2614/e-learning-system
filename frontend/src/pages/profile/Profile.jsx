@@ -7,6 +7,7 @@ import { toast } from 'react-toastify';
 
 const Profile = () => {
     const [user, setUser] = useState(null);
+    const [fullName, setFullName] = useState("");
     const [passwords, setPasswords] = useState({ old_password: '', new_password: '' });
     const [isLoading, setIsLoading] = useState(true);
     const navigate = useNavigate();
@@ -85,7 +86,8 @@ const Profile = () => {
             
             <div className="info-section">
                 <p><strong>Email:</strong> {user.email}</p>
-                <p><strong>Tên người dùng:</strong> {user.username}</p>
+                <p><strong>Họ và tên:</strong> {user.fullname}</p>
+                <p><strong>Username:</strong> {user.username}</p>
                 <p><strong>Vai trò:</strong> {user.role}</p>
             </div>
 

@@ -88,7 +88,7 @@ export default function CertificatePage() {
           <p className="cert-text">Chứng nhận rằng</p>
 
           <div className="student-name">
-            {certificate.user_name}
+            {certificate.full_name}
           </div>
 
           <p className="cert-text">đã hoàn thành khóa học</p>

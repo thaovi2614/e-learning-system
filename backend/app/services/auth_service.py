@@ -8,7 +8,7 @@ from flask import jsonify
 def register(data):
     user = User.query.filter_by(username=data.get("username")).first()
     if user:
-        return {"message": "Người dùng đã tồn tài"}, 400
+        return {"message": "Người dùng đã tồn tại"}, 400
     
     user = User.query.filter_by(email=data.get("email")).first()
     if user:
@@ -30,6 +30,7 @@ def register(data):
     new_user = User(
         username = data.get("username"),
         email = data.get("email"),
+        fullname=data.get("fullname", "").strip(),
         role = role,
         avatar = default_avatar,
     )
@@ -66,6 +67,7 @@ def get_profile(user_id):
     return jsonify({
         "id": user.id,
         "username": user.username,
+	"fullname": user.fullname,
         "avatar": user.avatar,
         "role": user.role.value
     })

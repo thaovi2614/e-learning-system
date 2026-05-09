@@ -16,6 +16,7 @@ export default function Register() {
     const navigate = useNavigate()
     const [form, setForm] = useState({
         username: "",
+        fullname: "",
         email: "",
         password: "",
         confirmPassword: "",
@@ -32,6 +33,12 @@ export default function Register() {
             placeholder: "Tên đăng nhập",
             type: "text",
             icon: userIcon
+        },
+        {
+            name: "fullname",
+            placeholder: "Họ và tên",
+            type: "text",
+            icon: userIcon 
         },
         {
             name: "email",

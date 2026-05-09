@@ -36,7 +36,7 @@ def get_certificate_by_course(user_id, course_id):
     course = Course.query.get(course_id)
 
     data = certificate.to_dict()
-    data["user_name"] = user.username if user else ""
+    data["full_name"] = user.fullname if user else ""
     data["course_name"] = course.name if course else ""
 
     return data
