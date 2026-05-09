@@ -81,11 +81,11 @@ class ChatbotService:
         - KHÔNG được in URL ra màn hình
         - KHÔNG được viết chữ "Link", "Thumbnail", hoặc bất kỳ dạng URL nào
         - CHỈ được dùng dữ liệu này để render HTML bên dưới
-	- Viết mã HTML ngay sau câu giới thiệu, không chèn thêm dòng trống giữa chữ và ảnh.
+	    - Viết mã HTML ngay sau câu giới thiệu, không chèn thêm dòng trống giữa chữ và ảnh.
         - Tuyệt đối không dùng thẻ <br/> sau ảnh và không dùng thẻ <div> bao quanh để tránh hở khoảng cách
         
-	3. **BẮT BUỘC dùng đúng format HTML sau:**
-        <a href="URL_LINK" target="_blank"><img src="URL_ẢNH" width="160" style="border-radius:8px; margin-top:4px; display:block;" alt="thumbnail"></a>
+        3. **BẮT BUỘC dùng đúng format HTML sau:**
+            <a href="URL_LINK" target="_blank"><img src="URL_ẢNH" width="160" style="border-radius:8px; margin-top:4px; display:block;" alt="thumbnail"></a>
         
         4. **Cách thay thế dữ liệu:**
 

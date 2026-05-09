@@ -67,6 +67,95 @@
     font-size: 15px;
 }
 
+.price-filter-box {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+    padding: 16px;
+    background: #f8fafc;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+}
+
+.price-filter-label {
+    font-weight: 600;
+    font-size: 14px;
+    color: #0f172a;
+}
+
+.price-range-display {
+    font-size: 14px;
+    color: #2563eb;
+    font-weight: 700;
+}
+
+.range-slider-wrapper {
+    position: relative;
+    height: 6px;
+    margin: 10px 0;
+    background: #e2e8f0;
+    border-radius: 3px;
+}
+
+.range-input {
+    position: absolute;
+    width: 100%;
+    height: 6px;
+    background: transparent;
+    pointer-events: none;
+    appearance: none;
+    top: 0;
+    left: 0;
+    margin: 0;
+}
+
+.range-input::-webkit-slider-thumb {
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #2563eb;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 6px rgba(37,99,235,0.4);
+    pointer-events: all;
+    cursor: pointer;
+    margin-top: -6px;
+}
+
+.range-input::-webkit-slider-runnable-track {
+    background: transparent;
+    height: 6px;
+    border-radius: 3px;
+}
+
+.range-track-fill {
+    position: absolute;
+    top: 0;
+    height: 6px;
+    background: #2563eb;
+    border-radius: 3px;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.price-filter-btn {
+    align-self: flex-start;
+    padding: 8px 20px;
+    background: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.15s;
+}
+
+.price-filter-btn:hover {
+    background: #1d4ed8;
+}
+
 /* ===== PAGINATION WRAPPER ===== */
 .search-pagination {
     margin-top: 40px;

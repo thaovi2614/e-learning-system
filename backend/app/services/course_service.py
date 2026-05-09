@@ -106,7 +106,7 @@ def find_courses(data, is_admin=False):
         ids = CategoryService.get_all_child_ids(category)
         query = query.filter(Course.category_id.in_(ids))
 
-    pagination = query.paginate(page=page, per_page=size, error_out=False)
+    pagination = query.order_by(Course.id.desc()).paginate(page=page, per_page=size, error_out=False)
 
     return {
         "items": pagination.items,

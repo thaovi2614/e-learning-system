@@ -15,6 +15,9 @@ export default function SearchCourse() {
     const [loading, setLoading] = useState(false);
     const [minPrice, setMinPrice] = useState("");
     const [maxPrice, setMaxPrice] = useState("");
+    // Thêm state
+    const [priceRange, setPriceRange] = useState([0, 10000000]);
+    const MAX_PRICE = 10000000;
 
     const listRef = useRef(null);
     const navigate = useNavigate();
@@ -22,17 +25,17 @@ export default function SearchCourse() {
     const kw = searchParams.get("kw") || "";
 
     async function fetchData(p = 1, shouldScroll = false) {
-        const min = parseFloat(minPrice);
-        const max = parseFloat(maxPrice);
+        // const min = parseFloat(minPrice);
+        // const max = parseFloat(maxPrice);
 
         //  Kiểm tra số âm
-        if ((minPrice && min < 0) || (maxPrice && max < 0)) {
+        if ((minPrice && minPrice < 0) || (maxPrice && maxPrice < 0)) {
             toast.error("Giá không được là số âm");
             return;
         }
 
         //  Kiểm tra Tối đa < Tối thiểu
-        if (minPrice && maxPrice && max < min) {
+        if (minPrice && maxPrice && maxPrice < minPrice) {
             toast.error("Giá tối đa phải lớn hơn hoặc bằng giá tối thiểu");
             return;
         }
@@ -72,31 +75,63 @@ export default function SearchCourse() {
                     Tìm kiếm cho: <strong>"{kw}"</strong>
                 </p>
                 <br></br>
-                <div className="price-filter-box" style={{ display: 'flex', gap: '10px', marginBottom: '20px', alignItems: 'center' }}>
-                <span>Khoảng giá:</span>
-                <input 
-                    type="number" 
-                    placeholder="Tối thiểu" 
-                    value={minPrice} 
-                    onChange={(e) => setMinPrice(e.target.value)}
-                    style={{ padding: '5px', borderRadius: '4px', border: '1px solid #ddd', width: '120px' }}
-                />
-                <span>-</span>
-                <input 
-                    type="number" 
-                    placeholder="Tối đa" 
-                    value={maxPrice} 
-                    onChange={(e) => setMaxPrice(e.target.value)}
-                    style={{ padding: '5px', borderRadius: '4px', border: '1px solid #ddd', width: '120px' }}
-                />
-                <button 
-                    onClick={() => fetchData(1)} 
-                    style={{ padding: '5px 15px', background: '#007bff', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
-                >
-                    Lọc
-                </button>
+                <div className="price-filter-box">
+                    <span className="price-filter-label">Khoảng giá:</span>
+
+                    <div className="price-range-display">
+                        <span>{priceRange[0].toLocaleString("vi-VN")}đ</span>
+                        <span> — </span>
+                        <span>{priceRange[1].toLocaleString("vi-VN")}đ</span>
+                    </div>
+
+                    <div className="range-slider-wrapper">
+                        <input
+                            type="range"
+                            min={0}
+                            max={MAX_PRICE}
+                            step={100000}
+                            value={priceRange[0]}
+                            onChange={(e) => {
+                                const val = Math.min(Number(e.target.value), priceRange[1] - 100000);
+                                setPriceRange([val, priceRange[1]]);
+                                setMinPrice(val);
+                            }}
+                            className="range-input range-min"
+                        />
+                        <input
+                            type="range"
+                            min={0}
+                            max={MAX_PRICE}
+                            step={100000}
+                            value={priceRange[1]}
+                            onChange={(e) => {
+                                const val = Math.max(Number(e.target.value), priceRange[0] + 100000);
+                                setPriceRange([priceRange[0], val]);
+                                setMaxPrice(val);
+                            }}
+                            className="range-input range-max"
+                        />
+                        <div
+                            className="range-track-fill"
+                            style={{
+                                left: `${(priceRange[0] / MAX_PRICE) * 100}%`,
+                                width: `${((priceRange[1] - priceRange[0]) / MAX_PRICE) * 100}%`,
+                            }}
+                        />
+                    </div>
+
+                    <button
+                        onClick={() => {
+                            
+                            
+                            fetchData(1);
+                        }}
+                        className="price-filter-btn"
+                    >
+                        Lọc
+                    </button>
                 </div>
-                </div>
+            </div>
 
             {/* ===== EMPTY STATE ===== */}
             {!loading && courses.length === 0 && (

@@ -109,9 +109,40 @@ export default function ChatWidget() {
                                     fontSize: '14px', lineHeight: '1.4',
                                     wordBreak: 'break-word',
                                     overflowWrap: 'break-word',
-                                    whiteSpace: 'pre-wrap'
                                 }}>
-                                    <ReactMarkdown rehypePlugins={[rehypeRaw]}>{m.text}</ReactMarkdown>
+                                    <ReactMarkdown
+                                        rehypePlugins={[rehypeRaw]}
+                                        components={{
+                                            p: ({node, ...props}) => (
+                                                <p style={{ margin: '0 0 4px 0' }} {...props} />
+                                            ),
+                                            ul: ({node, ...props}) => (
+                                                <ul style={{ margin: '4px 0', paddingLeft: '16px' }} {...props} />
+                                            ),
+                                            ol: ({node, ...props}) => (
+                                                <ol style={{ margin: '4px 0', paddingLeft: '16px' }} {...props} />
+                                            ),
+                                            li: ({node, ...props}) => (
+                                                <li style={{ margin: '2px 0' }} {...props} />
+                                            ),
+                                            img: ({node, ...props}) => (
+                                                <img
+                                                    {...props}
+                                                    style={{
+                                                        maxWidth: '100%',
+                                                        borderRadius: '8px',
+                                                        marginTop: '4px',
+                                                        display: 'block'
+                                                    }}
+                                                />
+                                            ),
+                                            a: ({node, ...props}) => (
+                                                <a {...props} style={{ textDecoration: 'none' }} />
+                                            )
+                                        }}
+                                    >
+                                        {m.text}
+                                    </ReactMarkdown>
                                 </div>
                             </div>
                         ))}
