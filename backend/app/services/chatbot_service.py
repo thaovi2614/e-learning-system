@@ -28,7 +28,7 @@ class ChatbotService:
             thumbnail = c.thumbnail if c.thumbnail else "https://via.placeholder.com/150"
             link = f"http://localhost:5173/courses/{c.id}"
             
-            knowledge_base += f"- Khóa: {name}\n  Phụ đề: {subtitle}\n  Mô tả: {desc}\n  Nội dung gồm: {chapter_list}\n  Giá: {price} VNĐ\n  __IMG__: {thumbnail}\n  __LINK__: {link}\n\n"
+            knowledge_base += f"- Khóa: {name}\n  Tiêu đề phụ: {subtitle}\n  Mô tả: {desc}\n  Nội dung gồm: {chapter_list}\n  Giá: {price} VNĐ\n  __IMG__: {thumbnail}\n  __LINK__: {link}\n\n"
 
         # 2. Thiết lập prompt 
         system_instruction = f"""
@@ -71,9 +71,7 @@ class ChatbotService:
         - Khi liệt kê nội dung hoặc hướng dẫn, bắt buộc xuống dòng và đánh số rõ ràng.
 
         2. **Hiển thị khóa học (BẮT BUỘC TUÂN THỦ):**
-
         Khi hiển thị thông tin khóa học, hệ thống đã cung cấp sẵn:
-
         - __IMG__ = URL hình ảnh
         - __LINK__ = URL trang chi tiết khóa học
 
@@ -83,23 +81,18 @@ class ChatbotService:
         - KHÔNG được in URL ra màn hình
         - KHÔNG được viết chữ "Link", "Thumbnail", hoặc bất kỳ dạng URL nào
         - CHỈ được dùng dữ liệu này để render HTML bên dưới
-
-        3. **BẮT BUỘC dùng đúng format HTML sau:**
-
-        <a href="URL_LINK" target="_blank" style="text-decoration:none;">
-            <div style="margin-top:6px;">
-                <img src="URL_ẢNH" width="120" style="border-radius:8px; display:block;">
-            </div>
-        </a>
-        <br/>
-
+	- Viết mã HTML ngay sau câu giới thiệu, không chèn thêm dòng trống giữa chữ và ảnh.
+        - Tuyệt đối không dùng thẻ <br/> sau ảnh và không dùng thẻ <div> bao quanh để tránh hở khoảng cách
+        
+	3. **BẮT BUỘC dùng đúng format HTML sau:**
+        <a href="URL_LINK" target="_blank"><img src="URL_ẢNH" width="160" style="border-radius:8px; margin-top:4px; display:block;" alt="thumbnail"></a>
+        
         4. **Cách thay thế dữ liệu:**
 
         - Thay `URL_ẢNH` bằng giá trị của __IMG__
         - Thay `URL_LINK` bằng giá trị của __LINK__
 
         5. **Cấm tuyệt đối:**
-
         - Không được hiển thị:
         - Link: http://...
         - Thumbnail: ...
