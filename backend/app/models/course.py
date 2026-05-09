@@ -21,6 +21,9 @@ class Course(db.Model):
     active = db.Column(db.Boolean, default=True, nullable=False)
     level = db.Column(db.String(50), nullable=True)
 
+    roadmap = db.Column(db.String(100), nullable=True)
+    roadmap_order = db.Column(db.Integer, nullable=True)
+
     instructor_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     category_id = db.Column(db.Integer, db.ForeignKey("categories.id"), nullable=False)
 
@@ -40,5 +43,7 @@ class Course(db.Model):
             "level": self.level,
             "instructor_id": self.instructor_id,
             "category_id": self.category_id,
-            "chapters": [c.to_dict() for c in self.chapters if c.active]
+            "chapters": [c.to_dict() for c in self.chapters if c.active],
+            "roadmap": self.roadmap,
+            "roadmap_order": self.roadmap_order
         }

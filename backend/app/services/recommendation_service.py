@@ -342,6 +342,50 @@ def get_history_recommendations(user, courses, enrolled_ids): # Thêm AI cho His
     ai_recs = ai_pick_top_courses(user, candidate_data)
     return map_ai_result(ai_recs, top_candidates)[:3]
 
+def get_roadmap_recommendations(user_id):
+    enrollments = Enrollment.query.filter_by(user_id=user_id).all()
+
+    if not enrollments:
+        return []
+
+    enrolled_ids = [e.course_id for e in enrollments]
+
+    learned_courses = Course.query.filter(
+        Course.id.in_(enrolled_ids)
+    ).all()
+
+    roadmap_results = []
+
+    for learned in learned_courses:
+
+        if not learned.roadmap or not learned.roadmap_order:
+            continue
+
+        next_course = Course.query.filter(
+            Course.roadmap == learned.roadmap,
+            Course.roadmap_order == learned.roadmap_order + 1,
+            Course.active == True
+        ).first()
+
+        if next_course:
+
+            existed = any(
+                c["id"] == next_course.id
+                for c in roadmap_results
+            )
+
+            if not existed:
+
+                data = next_course.to_dict()
+
+                data["roadmap_reason"] = (
+                    f"Khóa học tiếp theo trong lộ trình "
+                    f"{learned.roadmap.upper()}"
+                )
+
+                roadmap_results.append(data)
+
+    return roadmap_results[:3]
 
 def recommend_courses(user_id=None, goal=None):
     """
@@ -400,10 +444,12 @@ def recommend_courses(user_id=None, goal=None):
         courses,
         enrolled_ids
     )
+    roadmap_recommendations = get_roadmap_recommendations(user_id)
 
     return {
         "current_level": user.level,
         "current_goal": selected_goal,
         "career_recommendations": career_recommendations,
         "history_recommendations": history_recommendations,
+        "roadmap_recommendations": roadmap_recommendations,
     }

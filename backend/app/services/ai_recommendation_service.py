@@ -100,7 +100,7 @@ import json
 import traceback
 import google.generativeai as genai
 
-genai.configure(api_key="AIzaSyBxwA8MNskt4mvKFbuq96XBnKLkBkMd-Rk")
+genai.configure(api_key="GEMINI_API_KEY")
 
 model = genai.GenerativeModel("gemini-2.5-flash")
 

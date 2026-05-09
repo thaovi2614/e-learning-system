@@ -21,6 +21,7 @@ export default function RecommendedCourses() {
   const navigate = useNavigate();
   const [careerCourses, setCareerCourses] = useState([]);
   const [historyCourses, setHistoryCourses] = useState([]);
+  const [roadmapCourses, setRoadmapCourses] = useState([]);
   const [loading, setLoading] = useState(false);
   const [tab, setTab] = useState("career");
   const [goal, setGoal] = useState("backend");
@@ -47,6 +48,7 @@ export default function RecommendedCourses() {
 
       setCareerCourses(data.career_recommendations || []);
       setHistoryCourses(data.history_recommendations || []);
+      setRoadmapCourses(data.roadmap_recommendations || []);
 
       setCurrentLevel(data.current_level || "");
 
@@ -64,7 +66,12 @@ export default function RecommendedCourses() {
     fetchData(goal);
   }, [goal, fetchData]);
 
-  const displayed = tab === "career" ? careerCourses : historyCourses;
+  const displayed =
+    tab === "career"
+      ? careerCourses
+      : tab === "history"
+        ? historyCourses
+        : roadmapCourses;
 
   return (
     <div className="recommend-page">
@@ -97,6 +104,12 @@ export default function RecommendedCourses() {
           >
             Theo lịch sử học
           </button>
+          <button
+            className={tab === "roadmap" ? "active" : ""}
+            onClick={() => setTab("roadmap")}
+          >
+            Theo lộ trình học
+          </button>
         </div>
 
         {tab === "career" && (
@@ -117,15 +130,23 @@ export default function RecommendedCourses() {
       <div className="recommend-content">
         <div className="recommend-section-header">
           <h2>
-            {tab === "career"
-              ? "Gợi ý theo mục tiêu nghề nghiệp"
-              : "Gợi ý từ lịch sử học"}
+            {
+              tab === "career"
+                ? "Gợi ý theo mục tiêu nghề nghiệp"
+                : tab === "history"
+                  ? "Gợi ý từ lịch sử học"
+                  : "Lộ trình học tiếp theo"
+            }
           </h2>
 
           <p>
-            {tab === "career"
-              ? "Các khóa học phù hợp với định hướng nghề nghiệp hiện tại."
-              : "Các khóa học liên quan đến nội dung bạn đã học trước đó."}
+            {
+              tab === "career"
+                ? "Các khóa học phù hợp với định hướng nghề nghiệp hiện tại."
+                : tab === "history"
+                  ? "Các khóa học liên quan đến nội dung bạn đã học trước đó."
+                  : "Các khóa học tiếp theo trong lộ trình học tập của bạn."
+            }
           </p>
         </div>
 
@@ -171,9 +192,15 @@ function CourseCard({ course, type, onView }) {
       <div className="rec-body">
         <div className="rec-top">
           <span className={`rec-type-badge ${type}`}>
-            {type === "career" ? "Theo mục tiêu" : "Theo lịch sử học"}
+            {
+              type === "career"
+                ? "Theo mục tiêu"
+                : type === "history"
+                  ? "Theo lịch sử học"
+                  : "Theo lộ trình"
+            }
           </span>
-       
+
         </div>
 
         <h3>{course.name}</h3>
@@ -181,6 +208,12 @@ function CourseCard({ course, type, onView }) {
 
         {course.ai_reason && (
           <p className="rec-ai-reason">✨ {course.ai_reason}</p>
+        )}
+
+        {course.roadmap_reason && (
+          <p className="rec-roadmap">
+            🎯 {course.roadmap_reason}
+          </p>
         )}
 
         <div className="rec-footer">

@@ -129,3 +129,15 @@
 .recommend-user-level strong {
   text-transform: capitalize;
 }
+.rec-roadmap {
+  margin-top: 10px;
+  padding: 10px 14px;
+
+  border-radius: 10px;
+
+  background: #eef8ff;
+  color: #0f4c81;
+
+  font-size: 14px;
+  font-weight: 700;
+}
