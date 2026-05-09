@@ -175,14 +175,17 @@
 }
 
 .student-name {
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: 54px;
+  font-family: Segoe UI, "Helvetica", sans-serif;
+  font-size: 40px;
   color: #071d38;
   font-style: normal;
-  font-weight: 500;
-  letter-spacing: 8px;
+  font-weight: 600;
+  letter-spacing: 7px;
   text-transform: uppercase;
   margin: 8px 0 12px;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
 }
 
 .course-name {
