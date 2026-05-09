@@ -106,7 +106,10 @@ export default function ChatWidget() {
                                     color: m.role === 'user' ? colors.textUser : colors.textBot, 
                                     padding: '10px 14px', 
                                     borderRadius: m.role === 'user' ? '15px 15px 2px 15px' : '2px 15px 15px 15px', 
-                                    fontSize: '14px', lineHeight: '1.4'
+                                    fontSize: '14px', lineHeight: '1.4',
+                                    wordBreak: 'break-word',
+                                    overflowWrap: 'break-word',
+                                    whiteSpace: 'pre-wrap'
                                 }}>
                                     <ReactMarkdown rehypePlugins={[rehypeRaw]}>{m.text}</ReactMarkdown>
                                 </div>
