@@ -46,7 +46,8 @@ def get_progress_percent(user_id, course_id):
         .filter(
             LessonProgress.student_id == user_id,
             LessonProgress.status == LessonProgressStatus.COMPLETED,
-            Chapter.course_id == course_id
+            Chapter.course_id == course_id,
+            Lesson.active.is_(True)
         ).scalar()
 
     return round((completed / total_lessons) * 100, 2)
