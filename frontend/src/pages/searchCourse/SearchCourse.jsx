@@ -15,6 +15,7 @@ export default function SearchCourse() {
     const [loading, setLoading] = useState(false);
     const [minPrice, setMinPrice] = useState("");
     const [maxPrice, setMaxPrice] = useState("");
+    const [level, setLevel] = useState("");
     // Thêm state
     const [priceRange, setPriceRange] = useState([0, 10000000]);
     const MAX_PRICE = 10000000;
@@ -41,7 +42,7 @@ export default function SearchCourse() {
         }
         setLoading(true);
         try {
-            const res = await getCourses({ name: kw, page: p, size: 5, min_price: minPrice, max_price: maxPrice  });
+            const res = await getCourses({ name: kw, page: p, size: 5, min_price: minPrice, max_price: maxPrice, level: level });
             setCourses(res.data.items);
             setTotalCourses(res.data.total);
             setTotalPages(res.data.total_pages);
@@ -119,7 +120,19 @@ export default function SearchCourse() {
                             }}
                         />
                     </div>
-
+                    <div style={{ marginTop: '15px', marginBottom: '15px' }}>
+                        <span className="price-filter-label" style={{ marginRight: '10px' }}>Trình độ:</span>
+                        <select 
+                            value={level} 
+                            onChange={(e) => setLevel(e.target.value)}
+                            style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ddd', width: '200px' }}
+                        >
+                            <option value="">Tất cả trình độ</option>
+                            <option value="beginner">Beginner (Cơ bản)</option>
+                            <option value="intermediate">Intermediate (Trung cấp)</option>
+                            <option value="advanced">Advanced (Nâng cao)</option>
+                        </select>
+                    </div>        
                     <button
                         onClick={() => {
                             

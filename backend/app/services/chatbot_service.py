@@ -24,11 +24,12 @@ class ChatbotService:
             name = c.name if c.name else "Khóa học"
             subtitle = c.subtitle if c.subtitle else ""
             desc = c.description if c.description else "Chưa có mô tả"
+            level = c.level.capitalize() if c.level else "N/A"
             price = format_price_vnd(float(c.price)) if c.price is not None else "0 VNĐ"
             thumbnail = c.thumbnail if c.thumbnail else "https://via.placeholder.com/150"
             link = f"http://localhost:5173/courses/{c.id}"
             
-            knowledge_base += f"- Khóa: {name}\n  Tiêu đề phụ: {subtitle}\n  Mô tả: {desc}\n  Nội dung gồm: {chapter_list}\n  Giá: {price} VNĐ\n  __IMG__: {thumbnail}\n  __LINK__: {link}\n\n"
+            knowledge_base += f"- Khóa: {name}\n  Tiêu đề phụ: {subtitle}\n  Mô tả: {desc}\n  Trình độ: {level}\n  Nội dung gồm: {chapter_list}\n  Giá: {price} VNĐ\n  __IMG__: {thumbnail}\n  __LINK__: {link}\n\n"
 
         # 2. Thiết lập prompt 
         system_instruction = f"""

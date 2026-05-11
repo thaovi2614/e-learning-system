@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { getCourseById } from "../../services/courseApi";
 import { createChapter, removeChapter } from "../../services/chapterApi";
 import { createLesson, updateLesson, deleteLesson as deleteLessonApi } from "../../services/lessonApi";
 import ForumTab from "../learnCourse/ForumTab";
 import { toast } from "react-toastify";
+import { getCourseById, updateCourse } from "../../services/courseApi";
 import Swal from "sweetalert2";
 
 export default function CourseContentPage() {
@@ -341,16 +341,108 @@ export default function CourseContentPage() {
   };
 
   const filteredLessons = lessons.filter((lesson) => lesson.type === activeTab);
+  const handlePublish = async () => {
+      // Kiểm tra điều kiện: Khóa học phải có ít nhất 1 bài học
+      let hasContent = false;
+      // Kiểm tra trong danh sách bài học đang hiển thị HOẶC trong tất cả các chương
+      if (lessons.length > 0) {
+          hasContent = true;
+      } else {
+          hasContent = chapters.some(chapter => chapter.lessons && chapter.lessons.length > 0);
+      }
 
+      if (!hasContent) {
+          toast.warning("Khóa học hiện tại chưa có nội dung nào!");
+          return;
+      }
+      const result = await Swal.fire({
+        title: "Xuất bản khóa học?",
+        text: "Khóa học sẽ hiển thị công khai ở Trang chủ. Bạn đã chắc chắn upload đủ nội dung chưa?",
+        icon: "question",
+        showCancelButton: true,
+        confirmButtonText: "Xuất bản ngay",
+        cancelButtonText: "Chưa, để sau",
+        confirmButtonColor: "#16a34a",
+      });
+
+      if (!result.isConfirmed) return;
+
+      try {
+        // Gọi API cập nhật trạng thái thành true
+        const formData = new FormData();
+        formData.append("active", true);
+
+        await updateCourse(courseId, formData);
+        
+        // Cập nhật lại giao diện ngay lập tức
+        setCourse(prev => ({ ...prev, active: true }));
+        toast.success("Đã xuất bản khóa học thành công!");
+        
+      } catch (error) {
+        toast.error(error.response?.data?.message || "Lỗi khi xuất bản khóa học");
+      }
+    };
+      const handleUnpublish = async () => {
+      const result = await Swal.fire({
+        title: "Tạm ẩn khóa học?",
+        text: "Các học viên của bạn sẽ không nhìn thấy khóa học này nữa và cũng không thể tìm kiếm trên Trang chủ.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Tạm ẩn ngay",
+        cancelButtonText: "Hủy",
+        confirmButtonColor: "#f59e0b", 
+      });
+
+      if (!result.isConfirmed) return;
+
+      try {
+        const formData = new FormData();
+        formData.append("active", false);
+
+        await updateCourse(courseId, formData);
+        
+        setCourse(prev => ({ ...prev, active: false }));
+        toast.success("Đã tạm ẩn khóa học!");
+      } catch (error) {
+        toast.error(error.response?.data?.message || "Lỗi khi tạm ẩn khóa học");
+      }
+    };
   return (
     <div style={page}>
       <div style={container}>
         <div style={topBar}>
-          <h1 style={title}>Quản lý khóa học</h1>
+          <div>
+            <h1 style={title}>Quản lý khóa học</h1>
+            {/* Hiển thị trạng thái để Giảng viên biết */}
+            {course?.active ? (
+              <span style={{...badge, background: "#dcfce7", color: "#15803d", marginTop: "8px", display: "inline-block"}}>● Đang hoạt động</span>
+            ) : (
+              <span style={{...badge, background: "#fee2e2", color: "#b91c1c", marginTop: "8px", display: "inline-block"}}>● Tạm ẩn (Chưa xuất bản)</span>
+            )}
+          </div>
 
-          <button style={lightBtn} onClick={() => navigate("/manage-course")}>
-            ← Quay lại khóa học
-          </button>
+          <div style={{ display: "flex", gap: "12px" }}>
+            {/* Khóa đang ẩn thì hiện Xuất bản, khóa đang hđ thì hiện Tạm ẩn */}
+            {!course?.active ? (
+              <button 
+                style={{ ...lightBtn, background: "#16a34a", color: "#fff", border: "none" }} 
+                onClick={handlePublish}
+              >
+                Xuất bản khóa học
+              </button>
+            ) : (
+              <button 
+                style={{ ...lightBtn, background: "#f59e0b", color: "#fff", border: "none" }} 
+                onClick={handleUnpublish}
+              >
+                Tạm ẩn khóa học
+              </button>
+            )}
+
+            <button style={lightBtn} onClick={() => navigate("/manage-course")}>
+              ← Quay lại khóa học
+            </button>
+          </div>
         </div>
 
         <div style={courseCard}>

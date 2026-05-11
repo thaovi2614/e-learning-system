@@ -22,7 +22,7 @@ export default function CourseManagePage() {
     thumbnail: "",
     thumbnailFile: null,
     category_id: "",
-    active: true,
+    active: false,
     level: "beginner",
   });
 
@@ -102,7 +102,7 @@ export default function CourseManagePage() {
       description: "",
       thumbnail: "",
       category_id: "",
-      active: true,
+      active: false,
     });
     setEditingId(null);
     setShowForm(false);
@@ -414,7 +414,7 @@ export default function CourseManagePage() {
                   </option>
                 ))}
               </select>
-
+              {/*
               <select
                 style={input}
                 value={form.active ? "true" : "false"}
@@ -425,6 +425,7 @@ export default function CourseManagePage() {
                 <option value="true">Hoạt động</option>
                 <option value="false">Tạm ẩn</option>
               </select>
+              */}
             </div>
 
             <div className="mb-3">

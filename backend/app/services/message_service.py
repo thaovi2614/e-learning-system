@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from app.models.message import Message
 from app.models.user import User
 from app.configs.database_config import db
@@ -33,7 +35,8 @@ def create_message(conversation_id, sender_id, content=None, image_url=None):
         conversation_id=conversation_id,
         sender_id=sender_id,
         content=content,
-        image_url=image_url
+        image_url=image_url,
+        sentAt = datetime.now()
     )
     db.session.add(msg)
     db.session.commit()

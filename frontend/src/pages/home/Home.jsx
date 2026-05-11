@@ -12,13 +12,16 @@ export default function Home() {
     const [minPrice, setMinPrice] = useState("");
     const [maxPrice, setMaxPrice] = useState("");
     const [priceRange, setPriceRange] = useState([0, 10000000]);
+    const [level, setLevel] = useState(""); 
+    const [tempLevel, setTempLevel] = useState("");
     const MAX_PRICE = 10000000;
+
 
     const listRef = useRef(null);
     const navigate = useNavigate();
 
     const fetchData = useCallback(async (p = 1, shouldScroll = false) => {
-        const res = await getCourses({ page: p, size: 5, min_price: minPrice, max_price: maxPrice });
+        const res = await getCourses({ page: p, size: 5, min_price: minPrice, max_price: maxPrice, level: level});
         setCourses(res.data.items);
         setTotalPages(res.data.total_pages);
         setPage(p);
@@ -28,11 +31,11 @@ export default function Home() {
                 listRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
             }, 100);
         }
-    }, [minPrice, maxPrice]);
+    }, [minPrice, maxPrice, level]);
 
     useEffect(() => {
         fetchData(1);
-    }, [minPrice, maxPrice]);
+    }, [minPrice, maxPrice, level]);
 
     function formattedPrice(price) {
         return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(price);
@@ -67,7 +70,7 @@ export default function Home() {
                 <div className="section-header">
                     <h2 className="section-title">Tất cả khóa học</h2>
                 </div>
-
+                
                 {/* ===== FILTER GIÁ ===== */}
                 <div className="price-filter-box">
                     <span className="price-filter-label">Khoảng giá:</span>
@@ -103,11 +106,26 @@ export default function Home() {
                             }}
                         />
                     </div>
+                        {/* THÊM GIAO DIỆN LỌC LEVEL */}
+                    <div className="level-filter-box" style={{ marginTop: '15px', marginBottom: '15px' }}>
+                        <span className="price-filter-label" style={{ marginRight: '10px' }}>Trình độ:</span>
+                        <select 
+                            value={tempLevel} 
+                            onChange={(e) => setTempLevel(e.target.value)}
+                            style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ddd', width: '100%', maxWidth: '200px' }}
+                        >
+                            <option value="">Tất cả trình độ</option>
+                            <option value="beginner">Beginner (Cơ bản)</option>
+                            <option value="intermediate">Intermediate (Trung cấp)</option>
+                            <option value="advanced">Advanced (Nâng cao)</option>
+                        </select>
+                    </div>
                     <div className="price-filter-actions">
                         <button
                             onClick={() => {
                                 setMinPrice(priceRange[0]);
                                 setMaxPrice(priceRange[1]);
+                                setLevel(tempLevel);
                             }}
                             className="price-filter-btn"
                         >
@@ -118,6 +136,8 @@ export default function Home() {
                                 setPriceRange([0, MAX_PRICE]);
                                 setMinPrice("");
                                 setMaxPrice("");
+                                setLevel("");
+                                setTempLevel("");
                             }}
                             className="price-reset-btn"
                         >

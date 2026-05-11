@@ -68,6 +68,7 @@ def find_courses(data, is_admin=False):
     slug_path = data.get("category")
     min_price = data.get("min_price")
     max_price = data.get("max_price")
+    level = data.get("level")
 
     page = int(data.get("page", 1))
     size = int(data.get("size", 10))
@@ -90,6 +91,8 @@ def find_courses(data, is_admin=False):
             query = query.filter(Course.price <= float(max_price))
         except ValueError:
             pass
+    if level:
+        query = query.filter(Course.level == level)
 
     if slug_path and slug_path.strip(): 
         category = CategoryService.find_category_by_slug_path(slug_path)
@@ -195,6 +198,9 @@ def update_course(data, file, user_id, course_id):
     type_str = data.get("type")
     price = data.get("price")
     level = data.get("level")
+    
+    if "category_id" in data and data.get("category_id"):
+        course.category_id = data.get('category_id')
 
     if name:
         existed = Course.query.filter(
