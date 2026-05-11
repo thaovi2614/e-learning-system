@@ -120,19 +120,32 @@ export default function SearchCourse() {
                             }}
                         />
                     </div>
-                    <div style={{ marginTop: '15px', marginBottom: '15px' }}>
-                        <span className="price-filter-label" style={{ marginRight: '10px' }}>Trình độ:</span>
-                        <select 
-                            value={level} 
-                            onChange={(e) => setLevel(e.target.value)}
-                            style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ddd', width: '200px' }}
-                        >
-                            <option value="">Tất cả trình độ</option>
-                            <option value="beginner">Beginner (Cơ bản)</option>
-                            <option value="intermediate">Intermediate (Trung cấp)</option>
-                            <option value="advanced">Advanced (Nâng cao)</option>
-                        </select>
-                    </div>        
+                    <div className="level-filter-box">
+                        <span className="price-filter-label">Trình độ:</span>
+                        <div className="level-options">
+                            {[
+                                { value: "", label: "Tất cả" },
+                                { value: "beginner", label: "Cơ bản" },
+                                { value: "intermediate", label: "Trung cấp" },
+                                { value: "advanced", label: "Nâng cao" },
+                            ].map((opt) => (
+                                <div className="form-check" key={opt.value}>
+                                    <input
+                                        className="form-check-input"
+                                        type="radio"
+                                        name="levelFilter"
+                                        id={`level-${opt.value}`}
+                                        value={opt.value}
+                                        checked={level === opt.value}
+                                        onChange={() => setLevel(opt.value)}
+                                    />
+                                    <label className="form-check-label" htmlFor={`level-${opt.value}`}>
+                                        {opt.label}
+                                    </label>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
                     <button
                         onClick={() => {
                             

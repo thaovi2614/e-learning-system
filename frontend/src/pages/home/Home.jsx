@@ -35,7 +35,11 @@ export default function Home() {
 
     useEffect(() => {
         fetchData(1);
-    }, [minPrice, maxPrice, level]);
+    }, []);
+
+    const filterCourse = () => {
+        fetchData(1);
+    }
 
     function formattedPrice(price) {
         return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(price);
@@ -86,6 +90,7 @@ export default function Home() {
                             onChange={(e) => {
                                 const val = Math.min(Number(e.target.value), priceRange[1] - 100000);
                                 setPriceRange([val, priceRange[1]]);
+                                setMinPrice(val);
                             }}
                             className="range-input range-min"
                         />
@@ -95,6 +100,7 @@ export default function Home() {
                             onChange={(e) => {
                                 const val = Math.max(Number(e.target.value), priceRange[0] + 100000);
                                 setPriceRange([priceRange[0], val]);
+                                setMaxPrice(val);
                             }}
                             className="range-input range-max"
                         />
@@ -107,25 +113,39 @@ export default function Home() {
                         />
                     </div>
                         {/* THÊM GIAO DIỆN LỌC LEVEL */}
-                    <div className="level-filter-box" style={{ marginTop: '15px', marginBottom: '15px' }}>
-                        <span className="price-filter-label" style={{ marginRight: '10px' }}>Trình độ:</span>
-                        <select 
-                            value={tempLevel} 
-                            onChange={(e) => setTempLevel(e.target.value)}
-                            style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ddd', width: '100%', maxWidth: '200px' }}
-                        >
-                            <option value="">Tất cả trình độ</option>
-                            <option value="beginner">Beginner (Cơ bản)</option>
-                            <option value="intermediate">Intermediate (Trung cấp)</option>
-                            <option value="advanced">Advanced (Nâng cao)</option>
-                        </select>
+                    <div className="level-filter-box">
+                        <span className="price-filter-label">Trình độ:</span>
+                        <div className="level-options">
+                            {[
+                                { value: "", label: "Tất cả" },
+                                { value: "beginner", label: "Cơ bản" },
+                                { value: "intermediate", label: "Trung cấp" },
+                                { value: "advanced", label: "Nâng cao" },
+                            ].map((opt) => (
+                                <div className="form-check" key={opt.value}>
+                                    <input
+                                        className="form-check-input"
+                                        type="radio"
+                                        name="levelFilter"
+                                        id={`level-${opt.value}`}
+                                        value={opt.value}
+                                        checked={level === opt.value}
+                                        onChange={() => setLevel(opt.value)}
+                                    />
+                                    <label className="form-check-label" htmlFor={`level-${opt.value}`}>
+                                        {opt.label}
+                                    </label>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                     <div className="price-filter-actions">
                         <button
                             onClick={() => {
-                                setMinPrice(priceRange[0]);
-                                setMaxPrice(priceRange[1]);
-                                setLevel(tempLevel);
+                                // setMinPrice(priceRange[0]);
+                                // setMaxPrice(priceRange[1]);
+                                // setLevel(tempLevel);
+                                filterCourse()
                             }}
                             className="price-filter-btn"
                         >
@@ -137,7 +157,7 @@ export default function Home() {
                                 setMinPrice("");
                                 setMaxPrice("");
                                 setLevel("");
-                                setTempLevel("");
+                                // setTempLevel("");
                             }}
                             className="price-reset-btn"
                         >
